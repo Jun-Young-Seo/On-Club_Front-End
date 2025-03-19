@@ -11,16 +11,10 @@ export const unSecuredAPI = axios.create({
 export const login= async(loginData)=>{
     try{
         const response = await unSecuredAPI.post('/api/user/login',loginData);
-        console.log("Logiend");
-
-        console.log("\n Login Response:", response);
-        
-        console.log("\n response.data:", response.data);
-        
-
-        sessionStorage.setItem('userId',response.data.userId);
+        return response;
     }catch(error){
         console.log(error);
+        return false;
     }
 }
 
