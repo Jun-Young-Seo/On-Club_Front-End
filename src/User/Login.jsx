@@ -101,13 +101,18 @@ const Login = () => {
     const [password, setPassword] = useState('');
 
     const handleLogin = async()=>{
-        try {
+        try{
             const response = await login({ userTel, password });
-
-
-            alert('로그인 성공!');
-        } catch (error) {
-            console.error('로그인 실패:', error);
+            console.log(response);
+            sessionStorage.setItem('userId',response.data.userId);
+            navigate("/");
+        }catch(error){
+            if(error.response?.status === 401){
+                alert("Invalid Password");
+            }
+            else{
+                console.error(error);
+            }
         }
     };
     
