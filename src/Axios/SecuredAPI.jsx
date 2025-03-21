@@ -32,8 +32,11 @@ securedAPI.interceptors.response.use(
                 const refreshResponse = await unSecuredAPI.post('/api/user/refresh');
 
                 const newAccessToken = refreshResponse.data.accessToken;
+                console.log('new : ',newAccessToken);
                 sessionStorage.setItem('accessToken',newAccessToken);
-                
+                securedAPI.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+                error.config.headers['Authorization'] = `Bearer ${newAccessToken}`;
+
                 securedAPI.defaults.headers.Authorization = `Bearer ${newAccessToken}`;
                 
                 //새 발급 톹큰으로 재시도

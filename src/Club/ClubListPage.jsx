@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import securedAPI from "../Axios/SecuredAPI";
-
+import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 const DEFAULT_IMAGES = [
   "https://onclubbucket.s3.ap-northeast-2.amazonaws.com/alt/tennis_alt_image_1.jpg",
   "https://onclubbucket.s3.ap-northeast-2.amazonaws.com/alt/tennis_alt_image_2.jpg",
@@ -94,11 +95,13 @@ const ClubDescription = styled.p`
 
 const ClubListPage = () => {
   const [clubs, setClubs] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchClubs = async () => {
       try {
         const response = await securedAPI.get("/api/club/find/all");
+        // console.log(response.data);
         setClubs(response.data);
       } catch (error) {
         console.error("클럽 데이터를 불러오는 중 오류 발생:", error);
@@ -107,11 +110,15 @@ const ClubListPage = () => {
     fetchClubs();
   }, []);
 
+  const handleCardClicked = (clubId)=>{
+    navigate(`/clubs/${clubId}`);
+  }
+
   return (
     <PageContainer>
       <ClubGrid>
         {clubs.map((club, index) => (
-          <ClubCard key={club.clubId}>
+          <ClubCard key={club.club_id} onClick={()=>handleCardClicked(club.club_id)}>
             <ClubBackground bgImage={club.clubBackgroundImageURL} index={index} />
             <ClubLogo src={club.clubLogoURL || DEFAULT_IMAGES[index % DEFAULT_IMAGES.length]} />
             <ClubInfo>
