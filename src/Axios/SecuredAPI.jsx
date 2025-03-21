@@ -29,7 +29,16 @@ securedAPI.interceptors.response.use(
         if (error.response?.status === 401) { //case Unauthroized
             try {
                 // **Refresh Token으로 새로운 Access Token 요청
-                const refreshResponse = await unSecuredAPI.post('/api/user/refresh');
+                const refreshToken = sessionStorage.getItem('refreshToken');
+                if(!refreshToken){
+                    console.error('Invalid refresh token');
+                    return Promise.reject(error);
+                }
+                const refreshResponse = await unSecuredAPI.post('/api/user/refresh',{},{
+                    headers : {
+                        "Authorization": `Bearer ${refreshToken}`
+                    }
+                });
 
                 const newAccessToken = refreshResponse.data.accessToken;
                 console.log('new : ',newAccessToken);
