@@ -103,10 +103,15 @@ const Login = () => {
     const handleLogin = async()=>{
         try{
             const response = await login({ userTel, password });
-            console.log(response);
             sessionStorage.setItem('userId',response.data.userId);
-            navigate("/");
+            //BackEnd SSL Issue로 우선 Authorization Header로 인증정보처리
+            //SSL Issue 해결시, HTTP-Only Cookie로 바꾸고 코드 삭제하기
+            sessionStorage.setItem('accessToken',response.data.accessToken);
+            sessionStorage.setItem('refreshToken',response.data.refreshToken);
+            //로그인 성공시 리다이렉트
+            navigate("/clubs");
         }catch(error){
+            //알러트 나중에 제거하기.
             if(error.response?.status === 401){
                 alert("Invalid Password");
             }

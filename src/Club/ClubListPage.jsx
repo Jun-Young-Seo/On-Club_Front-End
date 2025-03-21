@@ -1,119 +1,126 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
+import securedAPI from "../Axios/SecuredAPI";
 
-const DEFAULT_IMAGE = "https://via.placeholder.com/150"; // 기본 이미지
+const DEFAULT_IMAGES = [
+  "https://onclubbucket.s3.ap-northeast-2.amazonaws.com/alt/tennis_alt_image_1.jpg",
+  "https://onclubbucket.s3.ap-northeast-2.amazonaws.com/alt/tennis_alt_image_2.jpg",
+  "https://onclubbucket.s3.ap-northeast-2.amazonaws.com/alt/tennis_alt_image3.jpg",
+  "https://onclubbucket.s3.ap-northeast-2.amazonaws.com/alt/tennis_alt_image_4.jpg",
+];
+
+const DEFAULT_BACKGROUND_COLORS=["#FFFFFF", "#C7E508"];
 
 const PageContainer = styled.div`
   padding: 20px;
-  max-width: 500px;
-  margin: 0 auto;
-`;
-
-const CategoryFilter = styled.div`
+  flex: 1;
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  flex-direction: column;
+  overflow-y: auto;
 `;
 
-const CategoryButton = styled.button`
-  padding: 8px 12px;
-  border: none;
-  border-radius: 20px;
-  background: ${(props) => (props.active ? "#4947FF" : "#e0e0e0")};
-  color: ${(props) => (props.active ? "white" : "black")};
-  cursor: pointer;
-  &:hover {
-    background: #4947ff;
-    color: white;
+const ClubGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(400px, 1fr)); 
+  gap: 40px;
+  justify-content: center;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(1, minmax(400px, 1fr));
   }
 `;
 
 const ClubCard = styled.div`
+  position: relative;
+  width: 100%;
+  height: 500px; 
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #ffffff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
   display: flex;
-  align-items: center;
-  padding: 15px;
-  margin-bottom: 15px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  flex-direction: column;
+  justify-content: space-between;
   cursor: pointer;
 `;
+const ClubBackground = styled.div`
+  position: relative;
+  width: 100%;
+  height: 70%;
+  background: ${(props) =>
+    props.bgImage
+      ? `url(${props.bgImage})`
+      : DEFAULT_BACKGROUND_COLORS[props.index % DEFAULT_BACKGROUND_COLORS.length]};
+  background-size: cover;
+  background-position: center;
+`;
 
-const ClubImage = styled.img`
-  width: 60px;
-  height: 60px;
-  border-radius: 10px;
-  margin-right: 15px;
+
+const ClubLogo = styled.img`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  border: 6px solid white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  background: white;
 `;
 
 const ClubInfo = styled.div`
+  background: white;
+  padding: 25px;
+  text-align: center;
+  height: 30%;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  border-top: 1px solid #ddd;
 `;
 
 const ClubName = styled.h3`
-  font-size: 16px;
-  margin: 0;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
 `;
 
 const ClubDescription = styled.p`
-  font-size: 14px;
-  color: gray;
-  margin: 5px 0 0;
+  font-size: 18px;
+  color: #555;
+  margin-top: 10px;
 `;
 
 const ClubListPage = () => {
   const [clubs, setClubs] = useState([]);
-  const [category, setCategory] = useState("전체");
-  const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get("http://43.201.191.12:8080/api/club/find/all")
-      .then((response) => {
-        console.log("📌 데이터 로드:", response.data);
+    const fetchClubs = async () => {
+      try {
+        const response = await securedAPI.get("/api/club/find/all");
         setClubs(response.data);
-      })
-      .catch((error) => {
-        console.error("❌ 데이터 로드 실패:", error);
-      });
+      } catch (error) {
+        console.error("클럽 데이터를 불러오는 중 오류 발생:", error);
+      }
+    };
+    fetchClubs();
   }, []);
-
-  const categories = ["전체", "운동/스포츠", "인문학/책", "외국어"];
-
-  const filteredClubs = category === "전체"
-    ? clubs
-    : clubs.filter((club) => club.category === category);
 
   return (
     <PageContainer>
-      <h2>소모임</h2>
-
-      {/* 🔹 카테고리 필터 */}
-      <CategoryFilter>
-        {categories.map((cat) => (
-          <CategoryButton
-            key={cat}
-            active={category === cat}
-            onClick={() => setCategory(cat)}
-          >
-            {cat}
-          </CategoryButton>
+      <ClubGrid>
+        {clubs.map((club, index) => (
+          <ClubCard key={club.clubId}>
+            <ClubBackground bgImage={club.clubBackgroundImageURL} index={index} />
+            <ClubLogo src={club.clubLogoURL || DEFAULT_IMAGES[index % DEFAULT_IMAGES.length]} />
+            <ClubInfo>
+              <ClubName>{club.clubName}</ClubName>
+              <ClubDescription>{club.clubDescription}</ClubDescription>
+            </ClubInfo>
+          </ClubCard>
         ))}
-      </CategoryFilter>
-
-      {/* 🔹 동호회 리스트 */}
-      {filteredClubs.map((club) => (
-        <ClubCard key={club.clubId} onClick={() => navigate(`/club/${club.clubId}`)}>
-          <ClubImage src={club.clubLogoURL || DEFAULT_IMAGE} alt="club-logo" />
-          <ClubInfo>
-            <ClubName>{club.clubName}</ClubName>
-            <ClubDescription>{club.clubDescription}</ClubDescription>
-          </ClubInfo>
-        </ClubCard>
-      ))}
+      </ClubGrid>
     </PageContainer>
   );
 };
