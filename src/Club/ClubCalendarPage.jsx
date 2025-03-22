@@ -79,6 +79,20 @@ const EventDetails = styled.div`
   }
 `;
 
+const AttendButton = styled.button`
+  padding: 10px 15px;
+  margin-top: 15px;
+  font-size: 16px;
+  border: none;
+  background: #C7E508;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
 const ClubCalendarPage = () => {
   const { clubId } = useParams();
   const [events, setEvents] = useState([]);
@@ -142,6 +156,21 @@ const ClubCalendarPage = () => {
     });
   };
 
+  const handleAttendEvent = async () => {
+    if (!selectedEvent) return;
+
+    try {
+      const response = await securedAPI.post("/api/guest/attend", {
+        userId: sessionStorage.getItem('userId'),
+        eventId: selectedEvent.eventId,
+      });
+      alert("✅ 이벤트 참석이 완료되었습니다!");
+    } catch (error) {
+      alert(`❌ 참석 실패: ${error.response?.data || "오류 발생"}`);
+    }
+  };
+
+
   return (
     <Container>
       <BackButton onClick={() => window.history.back()}>⬅ 돌아가기</BackButton>
@@ -165,6 +194,7 @@ const ClubCalendarPage = () => {
             <p><strong>📝 내용:</strong> {selectedEvent.eventDescription}</p>
             <p><strong>⏰ 시작 시간:</strong> {formatTime(selectedEvent.eventStartTime)}</p>
             <p><strong>⏳ 종료 시간:</strong> {formatTime(selectedEvent.eventEndTime)}</p>
+            <AttendButton onClick={handleAttendEvent}>🎟 게스트로 참석하기</AttendButton>
           </>
         ) : (
           <p>📭 {selectedDate ? "아무 일정이 없어요." : "날짜를 선택해 주세요."}</p>
