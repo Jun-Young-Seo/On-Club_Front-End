@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const unSecuredAPI = axios.create({
-    baseURL:'http://43.201.191.12:8080',
+    baseURL:'http://localhost:8080',
     headers:{
         'Content-Type' : 'application/json',
     },

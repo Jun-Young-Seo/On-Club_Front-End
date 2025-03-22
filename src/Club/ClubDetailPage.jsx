@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { useParams } from "react-router-dom";
 import securedAPI from "../Axios/SecuredAPI";
-import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { DEFAULT_IMAGES, DEFAULT_BACKGROUND_COLORS } from "../Constants/Default";
+import { useNavigate } from "react-router-dom";
 
 const Container = styled.div`
   width: 80%;
@@ -16,7 +17,10 @@ const Header = styled.div`
   position: relative;
   width: 100%;
   height: 300px;
-  background: ${(props) => `url(${props.bgImage})` || "#ddd"};
+  background: ${(props) =>
+    props.bgImage
+      ? `url(${props.bgImage})`
+      : DEFAULT_BACKGROUND_COLORS[props.index % DEFAULT_BACKGROUND_COLORS.length]};
   background-size: cover;
   background-position: center;
   border-radius: 16px;
@@ -28,16 +32,40 @@ const Header = styled.div`
 const ClubLogo = styled.img`
   position: absolute;
   bottom: -50px;
-  width: 120px;
-  height: 120px;
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
   border: 4px solid white;
   background: white;
 `;
 
+const TabContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 60px;
+  border-bottom: 2px solid #ddd;
+`;
+
+const TabButton = styled.button`
+  padding: 15px 20px;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  background: ${(props) => (props.active ? "#4CAF50" : "white")};
+  color: ${(props) => (props.active ? "white" : "#333")};
+  cursor: pointer;
+  transition: 0.3s;
+  flex: 1;
+  text-align: center;
+  &:hover {
+    background: #4caf50;
+    color: white;
+  }
+`;
+
 const ClubInfo = styled.div`
   text-align: center;
-  margin-top: 60px;
+  margin-top: 20px;
 `;
 
 const ClubName = styled.h1`
@@ -49,23 +77,12 @@ const ClubName = styled.h1`
 const ClubDescription = styled.p`
   font-size: 18px;
   color: #666;
+  margin-top: 10px;
 `;
 
 const Content = styled.div`
-  margin-top: 40px;
-  display: flex;
-  gap: 20px;
-`;
-
-const LeftColumn = styled.div`
-  flex: 1;
-`;
-
-const RightColumn = styled.div`
-  flex: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  margin-top: 20px;
+  padding: 20px;
 `;
 
 const ClubDetails = styled.div`
@@ -100,13 +117,13 @@ const Button = styled.button`
 const ClubDetailPage = () => {
   const { clubId } = useParams();
   const [club, setClub] = useState(null);
-    
+  const [activeTab, setActiveTab] = useState("소개");
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchClubDetails = async () => {
       try {
-        console.log('clubID : ',clubId);
         const response = await securedAPI.get(`/api/club/find/by-club_id?clubId=${clubId}`);
-        console.log(response);
         setClub(response.data);
       } catch (error) {
         console.error("클럽 상세 정보를 불러오는 중 오류 발생:", error);
@@ -119,40 +136,66 @@ const ClubDetailPage = () => {
 
   return (
     <Container>
-      <Header bgImage={club.clubBackgroundImageURL}>
-        <ClubLogo src={club.clubLogoURL} alt="club-logo" />
+      {/* 🔹 상단 배경 + 로고 */}
+      <Header
+        bgImage={club.clubBackgroundImageURL}
+        index={parseInt(clubId, 10) % DEFAULT_BACKGROUND_COLORS.length+1}
+      >
+        <ClubLogo src={club.clubLogoURL || DEFAULT_IMAGES[parseInt(clubId, 10) % DEFAULT_IMAGES.length]} />
       </Header>
+
+      {/* 🔹 클럽 기본 정보 */}
       <ClubInfo>
         <ClubName>{club.clubName}</ClubName>
         <ClubDescription>{club.clubDescription}</ClubDescription>
       </ClubInfo>
+
+      {/* 🔹 탭 버튼 */}
+      <TabContainer>
+        {["소개", "활동 사진", "회원 정보"].map((tab) => (
+          <TabButton key={tab} active={activeTab === tab} onClick={() => setActiveTab(tab)}>
+            {tab}
+          </TabButton>
+        ))}
+      </TabContainer>
+
+      {/* 🔹 탭별 컨텐츠 */}
       <Content>
-        <LeftColumn>
+        {activeTab === "소개" && (
           <ClubDetails>
             <h2>📌 클럽 소개</h2>
-            <p>{club.clubDetails}</p>
+            <p>{club.clubDetails || "클럽 소개가 없습니다."}</p>
           </ClubDetails>
-        </LeftColumn>
-        <RightColumn>
+        )}
+
+        {activeTab === "활동 사진" && (
           <ClubDetails>
             <h2>📸 활동 사진</h2>
             <div>
-              {club.clubGalleryImages &&
+              {club.clubGalleryImages && club.clubGalleryImages.length > 0 ? (
                 club.clubGalleryImages.map((img, index) => (
                   <img key={index} src={img} alt="club-gallery" width="100%" />
-                ))}
+                ))
+              ) : (
+                <p>활동 사진이 없습니다.</p>
+              )}
             </div>
           </ClubDetails>
+        )}
+
+        {activeTab === "회원 정보" && (
           <ClubDetails>
-            <h2>👥 정회원 수: {club.memberCount}명</h2>
-            <h3>🎫 게스트 참여 수: {club.guestCount}명</h3>
+            <h2>👥 정회원 수: {club.memberCount || 0}명</h2>
+            <h3>🎫 게스트 참여 수: {club.guestCount || 0}명</h3>
           </ClubDetails>
-        </RightColumn>
+        )}
       </Content>
+
+      {/* 🔹 버튼들 */}
       <ButtonContainer>
         <Button primary>정회원 가입하기</Button>
         <Button>게스트로 참여하기</Button>
-        <Button>📅 일정 확인하기</Button>
+        <Button onClick={() => navigate(`/clubs/${clubId}/calendar`)}>📅 일정 확인하기</Button>
       </ButtonContainer>
     </Container>
   );
