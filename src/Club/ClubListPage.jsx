@@ -3,14 +3,8 @@ import styled from "styled-components";
 import securedAPI from "../Axios/SecuredAPI";
 import { Navigate } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-const DEFAULT_IMAGES = [
-  "https://onclubbucket.s3.ap-northeast-2.amazonaws.com/alt/tennis_alt_image_1.jpg",
-  "https://onclubbucket.s3.ap-northeast-2.amazonaws.com/alt/tennis_alt_image_2.jpg",
-  "https://onclubbucket.s3.ap-northeast-2.amazonaws.com/alt/tennis_alt_image3.jpg",
-  "https://onclubbucket.s3.ap-northeast-2.amazonaws.com/alt/tennis_alt_image_4.jpg",
-];
+import { DEFAULT_IMAGES, DEFAULT_BACKGROUND_COLORS } from "../Constants/Default";
 
-const DEFAULT_BACKGROUND_COLORS=["#FFFFFF", "#C7E508"];
 
 const PageContainer = styled.div`
   padding: 20px;
