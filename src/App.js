@@ -8,6 +8,8 @@ import Signup from "./User/Singup"
 import Main from "./Main/Main";
 import ClubDetailPage from "./Club/ClubDetailPage";
 import ClubCalendarPage from "./Club/ClubCalendarPage";
+import TransactionTable from "./Club/Budget/TrasactionTable";
+
 const App = () => {
   return (
     <Routes>
@@ -17,11 +19,11 @@ const App = () => {
       {/* 로그인 페이지 */}
       {/* 로그인 성ㅇ공시 레이아웃(헤더+사이드바) 렌더링 --> login모듈에 리다이렉트 코드 잉ㅆ음 */}
       <Route path="/login" element={<Login />} />
-
       <Route path="/clubs/*" element={<Layout />}>
         <Route index element={<ClubListPage />} />
         <Route path=":clubId" element={<ClubDetailPage/>}/>
         <Route path=":clubId/calendar" element={<ClubCalendarPage/>}/>
+        <Route path=":clubId/budget" element={<TransactionTable/>}/>
       </Route>
     </Routes>
   );
