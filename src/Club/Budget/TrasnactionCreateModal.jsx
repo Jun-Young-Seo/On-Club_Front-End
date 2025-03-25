@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import dayjs from "dayjs";
+import securedAPI from "../../Axios/SecuredAPI"; // ✅ API 호출을 위한 import
+import { useParams } from "react-router-dom";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -15,12 +17,12 @@ const ModalOverlay = styled.div`
 `;
 
 const ReceiptContainer = styled.div`
-  background: #fdf6e3; /* 크림색 배경 */
+  background: #fdf6e3;
   padding: 20px;
   width: 400px;
   border-radius: 12px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  border: 2px #000;
+  border: 2px solid #000;
   font-family: "Courier New", Courier, monospace;
 `;
 
@@ -47,7 +49,7 @@ const Label = styled.span`
 `;
 
 const Input = styled.input`
-  border: 1px solid #ccc; /* 테두리 추가 */
+  border: 1px solid #ccc;
   background: white;
   text-align: right;
   font-size: 14px;
@@ -67,7 +69,7 @@ const Input = styled.input`
 `;
 
 const Select = styled.select`
-  border: 1px solid #ccc; /* 테두리 추가 */
+  border: 1px solid #ccc;
   background: white;
   text-align: right;
   font-size: 14px;
@@ -122,36 +124,55 @@ const CancelButton = styled.button`
   }
 `;
 
-const TransactionPutModal = ({ onClose, onCreate }) => {
+const TransactionCreateModal = ({ onClose, onCreate, selectedAccount }) => {
+  const { clubId } = useParams();
   const [transaction, setTransaction] = useState({
     transactionDate: dayjs().format("YYYY-MM-DD"),
-    transactionType: "입금",
     transactionTime: dayjs().format("HH:mm"),
+    transactionType: "입금",
+    transactionBalance:"",
     transactionAmount: "",
-    transactionBalance: "",
     transactionCategory: "",
     transactionDetail: "",
     transactionMemo: "",
+    transactionDescription:""
   });
 
   const handleChange = (e) => {
     setTransaction({ ...transaction, [e.target.name]: e.target.value });
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!transaction.transactionAmount || !transaction.transactionCategory) {
       alert("필수 항목을 입력하세요.");
       return;
     }
 
-    onCreate({
-      ...transaction,
+    const formattedTransaction = {
+      clubId : clubId,
+      clubAccountId: selectedAccount, // 선택한 계좌 ID
+      transactionDate: `${transaction.transactionDate}T${transaction.transactionTime}:00`,
+      transactionType: transaction.transactionType,
+      transactionBalance:parseInt(transaction.transactionBalance),
       transactionAmount: parseInt(transaction.transactionAmount),
-      transactionBalance: parseInt(transaction.transactionBalance),
-      transactionId: Date.now(), // 임시 ID
-    });
+      transactionCategory: transaction.transactionCategory,
+      transactionDetail: transaction.transactionDetail,
+      transactionMemo: transaction.transactionMemo,
+      transactionDescription: transaction.transactionDescription
+    };
 
-    onClose();
+    try {
+      // ✅ 거래 생성 API 호출
+      const response = await securedAPI.post("/api/budget/add", formattedTransaction);
+      console.log("🚀 거래 생성 성공:", response.data);
+
+      // ✅ 부모 컴포넌트에 새 거래 추가 후 업데이트
+      onCreate(response.data);
+      onClose();
+    } catch (error) {
+      console.error("❌ 거래 생성 실패:", error);
+      alert("거래를 생성하는 중 오류가 발생했습니다.");
+    }
   };
 
   return (
@@ -181,10 +202,15 @@ const TransactionPutModal = ({ onClose, onCreate }) => {
           <Label>금액</Label>
           <Input type="number" name="transactionAmount" value={transaction.transactionAmount} onChange={handleChange} />
         </FormGroup>
-
+        
         <FormGroup>
           <Label>잔액</Label>
-          <Input type="number" name="transactionBalance" value={transaction.transactionBalance} onChange={handleChange} />
+          <Input type="number" name="transactionBalance" value={transaction.transactionBalance} onChange={handleChange}/>
+        </FormGroup>
+
+        <FormGroup>
+          <Label>내용</Label>
+          <Input type="text" name="transactionDescription" value={transaction.transactionDescription} onChange={handleChange} />
         </FormGroup>
 
         <FormGroup>
@@ -196,9 +222,9 @@ const TransactionPutModal = ({ onClose, onCreate }) => {
           <Label>AI 거래분류</Label>
           <Input type="text" name="transactionDetail" value={transaction.transactionDetail} onChange={handleChange} />
         </FormGroup>
-
+        
         <FormGroup>
-          <Label>비고</Label>
+          <Label>메모</Label>
           <Input type="text" name="transactionMemo" value={transaction.transactionMemo} onChange={handleChange} />
         </FormGroup>
 
@@ -211,4 +237,4 @@ const TransactionPutModal = ({ onClose, onCreate }) => {
   );
 };
 
-export default TransactionPutModal;
+export default TransactionCreateModal;
