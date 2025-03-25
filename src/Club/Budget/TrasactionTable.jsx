@@ -22,15 +22,6 @@ const TopSection = styled.div`
   margin-bottom: 20px;
 `;
 
-const SearchInput = styled.input`
-  width: 30%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 16px;
-  outline: none;
-`;
-
 const FilterContainer = styled.div`
   display: flex;
   gap: 10px;
@@ -175,11 +166,18 @@ const TransactionTable = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
-    if (selectedAccount) {
-      setTransactions([]); // 기존 데이터 초기화
-      setCurrentPage(1); // 페이지 리셋
-      fetchTransactions();
-    }
+    const fetchTransactions = async () => {
+      if (!selectedAccount) return;
+      try {
+        const response = await securedAPI.get(`/api/budget/get-all/account_id?accountId=${selectedAccount}`);
+        console.log("🚀 [Transaction Data Loaded]", response.data);
+        setTransactions(response.data || []);
+      } catch (error) {
+        console.error("❌ 거래 내역을 불러오는데 실패했습니다.", error);
+      }
+    };
+  
+    fetchTransactions();
   }, [selectedAccount]);
 
   const onEditTransaction = (transaction) => {
