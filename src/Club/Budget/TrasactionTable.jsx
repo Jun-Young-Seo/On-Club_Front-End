@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import dayjs from "dayjs";
-import TransactionModal from "./TransactionModal";
+import TransactionModal from "./TransactionModifyModal";
 import securedAPI from "../../Axios/SecuredAPI";
-import TransactionPutModal from "./TrasnactionPutModal";
+import TransactionCreateModal from "./TrasnactionCreateModal";
 import Accounts from "./Accounts";
-import { useParams } from "react-router-dom";
 
 const Container = styled.div`
   width: 90%;
@@ -14,6 +13,65 @@ const Container = styled.div`
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+`;
+
+const TopSection = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+`;
+
+const SearchInput = styled.input`
+  width: 30%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+`;
+
+const FilterContainer = styled.div`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+`;
+
+const FilterButton = styled.button`
+  background-color: ${(props) => (props.active ? "#3498db" : "#ddd")};
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+  transition: background 0.2s ease-in-out;
+
+  &:hover {
+    background-color: ${(props) => (props.active ? "#2980b9" : "#bbb")};
+  }
+`;
+
+const DateInput = styled.input`
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+`;
+
+const ResetButton = styled.button`
+  background-color: #ff6b6b;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+  transition: background 0.2s ease-in-out;
+
+  &:hover {
+    background-color: #e63946;
+  }
 `;
 
 const MessageContainer = styled.div`
@@ -89,13 +147,32 @@ const TableRow = styled.tr`
     background-color: #f1f1f1;
   }
 `;
+const AddTransactionButton = styled.button`
+  background-color: #2ecc71;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+
+  &:hover {
+    background-color: #27ae60;
+  }
+`;
+
 
 const TransactionTable = () => {
-  const { clubId } = useParams();
   const [transactions, setTransactions] = useState([]);
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [filter, setFilter] = useState("전체");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
     if (selectedAccount) {
@@ -105,25 +182,69 @@ const TransactionTable = () => {
     }
   }, [selectedAccount]);
 
+  const onEditTransaction = (transaction) => {
+    setSelectedTransaction(transaction);
+    setIsModalOpen(true);
+  };
+
+  const onSaveTransaction = () => {
+    setIsModalOpen(false);
+    fetchTransactions();
+  };
+
   const fetchTransactions = async () => {
     try {
       const response = await securedAPI.get(`/api/budget/get-all/account_id?accountId=${selectedAccount}`);
       console.log("🚀 [Transaction Data Loaded]", response.data);
-      setTransactions(response.data || []); // 빈 응답 방어 코드 추가
+      setTransactions(response.data || []);
     } catch (error) {
       console.error("❌ 거래 내역을 불러오는데 실패했습니다.", error);
     }
   };
 
-  const paginatedTransactions = transactions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const filteredTransactions = transactions.filter((transaction) => {
+    if (filter === "입금" && transaction.transactionType !== "입금") return false;
+    if (filter === "출금" && transaction.transactionType !== "출금") return false;
 
+    if (startDate && dayjs(transaction.transactionDate).isBefore(dayjs(startDate),"day")) return false;
+    if (endDate && dayjs(transaction.transactionDate).isAfter(dayjs(endDate),"day")) return false;
+
+    return true;
+  });
+
+  const paginatedTransactions = filteredTransactions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const resetFilters = () => {
+    setFilter("전체");
+    setStartDate("");
+    setEndDate("");
+  };
+  const handleCreateTransaction = (newTransaction) => {
+    setTransactions([...transactions, newTransaction]);
+  };
+  
   return (
     <Container>
+      <TopSection>
+      <AddTransactionButton onClick={() => setIsCreateModalOpen(true)}>+ 거래 추가</AddTransactionButton>
+      <FilterContainer>
+          <FilterButton active={filter === "전체"} onClick={() => setFilter("전체")}>전체</FilterButton>
+          <FilterButton active={filter === "입금"} onClick={() => setFilter("입금")}>입금</FilterButton>
+          <FilterButton active={filter === "출금"} onClick={() => setFilter("출금")}>출금</FilterButton>
+
+          <DateInput type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+          <span>~</span>
+          <DateInput type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+
+          <ResetButton onClick={resetFilters}>초기화</ResetButton>
+        </FilterContainer>
+      </TopSection>
+
       <Accounts onSelectAccount={setSelectedAccount} />
 
       {selectedAccount ? (
         <>
-          {transactions.length === 0 ? (
+          {filteredTransactions.length === 0 ? (
             <MessageContainer>거래 내역이 없습니다.</MessageContainer>
           ) : (
             <>
@@ -159,27 +280,41 @@ const TransactionTable = () => {
                       <TableCell>{transaction.transactionDescription}</TableCell>
                       <TableCell>{transaction.transactionMemo}</TableCell>
                       <TableCell>
-                        <EditButton>수정</EditButton>
+                        <EditButton onClick={() => onEditTransaction(transaction)}>수정</EditButton>
                       </TableCell>
                     </TableRow>
                   ))}
                 </tbody>
               </Table>
 
-              {/* ✅ 페이지네이션 추가 */}
               <Pagination>
                 <PageButton disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>
                   이전
                 </PageButton>
-                <span>{currentPage} / {Math.ceil(transactions.length / itemsPerPage)}</span>
-                <PageButton disabled={currentPage >= Math.ceil(transactions.length / itemsPerPage)} 
+                <span>{currentPage} / {Math.ceil(filteredTransactions.length / itemsPerPage)}</span>
+                <PageButton disabled={currentPage >= Math.ceil(filteredTransactions.length / itemsPerPage)} 
                   onClick={() => setCurrentPage(currentPage + 1)}>
                   다음
                 </PageButton>
               </Pagination>
             </>
           )}
+          {isModalOpen && selectedTransaction && (
+            <TransactionModal
+              transaction={selectedTransaction}
+              onSave={onSaveTransaction}
+              onClose={() => setIsModalOpen(false)}
+            />
+          )}
+            {isCreateModalOpen && (
+            <TransactionCreateModal 
+                onClose={() => setIsCreateModalOpen(false)}
+                onCreate={handleCreateTransaction}
+                selectedAccount={selectedAccount} />
+            )}
+
         </>
+        
       ) : (
         <MessageContainer>계좌를 선택해 주세요.</MessageContainer>
       )}
