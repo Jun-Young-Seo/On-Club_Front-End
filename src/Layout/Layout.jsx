@@ -1,55 +1,51 @@
 import React from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import styled from "styled-components";
 
 const LayoutContainer = styled.div`
   display: flex;
-  height: 100vh;  // ✅ 전체 화면을 차지
+  height: 100vh;  
 `;
 
 const SidebarContainer = styled.div`
-  width: 80px;  // ✅ 사이드바 고정 크기
   background-color: #222;
   color: white;
   display: flex;
   flex-direction: column;
+  height: 100vh;
 `;
 
 const MainContent = styled.div`
-  flex: 1;  // ✅ 나머지 공간 차지
+  flex: 1;
   display: flex;
   flex-direction: column;
+  padding-top:60px;
+//   padding-left: 80px; /* ✅ 사이드바 너비만큼 왼쪽 마진 추가 */
   overflow: hidden;
 `;
 
 const ContentContainer = styled.div`
   flex: 1;
-  padding: 20px;
-  overflow-y: auto;  // ✅ 스크롤 가능하도록 설정
+  padding: 20px; /* ✅ 여기에서 패딩 조정 */
+  overflow-y: auto;
 `;
 
 const Layout = () => {
-  const navigate = useNavigate();
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("userId");
-    navigate("/login"); // ✅ 로그아웃 시 로그인 페이지로 이동
-  };
 
   return (
     <LayoutContainer>
-      {/* ✅ 사이드바 */}
       <SidebarContainer>
         <Sidebar />
       </SidebarContainer>
 
-      {/* ✅ 메인 컨텐츠 */}
+      {/* ✅ 메인 컨텐츠 (마진 적용) */}
       <MainContent>
-        <Header onLogout={handleLogout} />
+        <Header/>
         <ContentContainer>
-          <Outlet />  {/* 🔹 여기서 ClubListPage 등 자식 컴포넌트가 렌더링됨 */}
+          <Outlet />  
         </ContentContainer>
       </MainContent>
     </LayoutContainer>

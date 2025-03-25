@@ -10,13 +10,14 @@ const Container = styled.div`
   margin: auto;
   padding: 40px;
   display: flex;
+  // padding-top: 120px;
   flex-direction: column;
 `;
 
 const Header = styled.div`
   position: relative;
   width: 100%;
-  height: 300px;
+  min-height : 40vh;
   background: ${(props) =>
     props.bgImage
       ? `url(${props.bgImage})`
@@ -31,9 +32,9 @@ const Header = styled.div`
 
 const ClubLogo = styled.img`
   position: absolute;
-  bottom: -50px;
-  width: 200px;
-  height: 200px;
+  bottom: -4vh;
+  width: 230px;
+  height: 230px;
   border-radius: 50%;
   border: 4px solid white;
   background: white;
@@ -71,6 +72,7 @@ const ClubInfo = styled.div`
 const ClubName = styled.h1`
   font-size: 32px;
   font-weight: bold;
+  padding-top:5vh;
   color: #333;
 `;
 
@@ -164,6 +166,7 @@ const ClubDetailPage = () => {
         {activeTab === "소개" && (
           <ClubDetails>
             <h2>📌 클럽 소개</h2>
+            <br></br>
             <p>{club.clubDetails || "클럽 소개가 없습니다."}</p>
           </ClubDetails>
         )}

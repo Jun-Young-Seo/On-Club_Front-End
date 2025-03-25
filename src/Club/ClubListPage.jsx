@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import securedAPI from "../Axios/SecuredAPI";
-import { Navigate } from "react-router-dom";
+
 import { useNavigate } from "react-router-dom";
 import { DEFAULT_IMAGES, DEFAULT_BACKGROUND_COLORS } from "../Constants/Default";
 
@@ -12,6 +12,8 @@ const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  padding-top:120px;
+
 `;
 
 const ClubGrid = styled.div`
@@ -27,7 +29,7 @@ const ClubGrid = styled.div`
 
 const ClubCard = styled.div`
   position: relative;
-  width: 100%;
+  width: 90%;
   height: 500px; 
   border-radius: 16px;
   overflow: hidden;
