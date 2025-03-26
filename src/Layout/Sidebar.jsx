@@ -53,7 +53,7 @@ const MenuItem = styled.li`
 `;
 
 const Sidebar = () => {
-  const [activeItem, setActiveItem] = useState("Dashboard");
+  const [activeItem, setActiveItem] = useState("home");
   const navigate = useNavigate();
   const {clubId} = useParams();
 
