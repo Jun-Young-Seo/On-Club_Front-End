@@ -11,6 +11,7 @@ import ClubDetailPage from "./Club/ClubDetailPage";
 import ClubCalendarPage from "./Club/ClubCalendarPage";
 import TransactionTable from "./Club/Budget/TrasactionTable";
 import BudgetDashBoard from "./Club/Budget/BudgetDashBoard";
+import Match from "./Match/Match";
 
 const App = () => {
   return (
@@ -37,6 +38,7 @@ const App = () => {
         <Route path="dashboard" element={<BudgetDashBoard/>}/>
         <Route path="calendar" element={<ClubCalendarPage />} />
         <Route path="budget" element={<TransactionTable />} />
+        <Route path="match" element={<Match/>}/>
       </Route>
     </Routes>
   );
