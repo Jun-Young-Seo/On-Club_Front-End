@@ -187,11 +187,11 @@ const Dashboard = () => {
     monthlySurplus: 0,
   });
   const [transactions, setTransactions] = useState([]);
-
+  const [account, setAccount] = useState([]);
   useEffect(() => {
     const fetchBudgetInfo = async () => {
       try {
-        const response = await securedAPI.get(`/api/budget/get/budgetInfo?clubId=${clubId}`);
+        const response = await securedAPI.get(`/api/budget/get/budget-info?clubId=${clubId}`);
         console.log(response);
         setBudgetInfo(response.data);
         console.log("✅ 대시보드 데이터:", response.data);
@@ -199,6 +199,10 @@ const Dashboard = () => {
         const txResponse = await securedAPI.get(`/api/budget/get/latest-three?clubId=${clubId}`);
         setTransactions(txResponse.data);
         console.log("✅ 최근 거래 데이터:", txResponse.data);
+
+        const accountResponse = await securedAPI.get(`/api/club/get/main-account?clubId=${clubId}`);
+        setAccount(accountResponse.data);
+        console.log('account data : ',accountResponse.data);
 
       } catch (error) {
         console.error("❌ 대시보드 데이터 가져오기 실패:", error);
@@ -285,10 +289,11 @@ const Dashboard = () => {
     <AccountCard>
       <BankLogo src={kakaoBankLogoSvg} alt="KakaoBank Logo" />
       <div>
-        <BankName>kakaobank</BankName>
-        <AccountName>test</AccountName>
+        <BankName>{account.bankName}</BankName>
+        <AccountName>{account.accountOwner}</AccountName>
+        <AccountName>{account.accountName}</AccountName>
       </div>
-      <CardNumber>계좌번호 test acc num</CardNumber>
+      <CardNumber>{account.accountNumber}</CardNumber>
     </AccountCard>
   </div>
 </Section>
