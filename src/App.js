@@ -12,6 +12,7 @@ import ClubCalendarPage from "./Club/ClubCalendarPage";
 import TransactionTable from "./Club/Budget/TrasactionTable";
 import BudgetDashBoard from "./Club/Budget/BudgetDashBoard";
 import Match from "./Match/Match";
+import MatchDashBoard from "./Match/MatchDashBoard";
 
 const App = () => {
   return (
@@ -35,11 +36,12 @@ const App = () => {
       {/* 클럽 상세 페이지 이하 모든 페이지에 레이아웃 적용 */}
       <Route path="/clubs/:clubId/*" element={<Layout />}>
         <Route index element={<ClubDetailPage />} />
-        <Route path="dashboard" element={<BudgetDashBoard/>}/>
+        <Route path="budget_dashboard" element={<BudgetDashBoard/>}/>
         <Route path="calendar" element={<ClubCalendarPage />} />
-        <Route path="budget" element={<TransactionTable />} />
-        <Route path="match" element={<Match/>}/>
-      </Route>
+        <Route path="budget_detail" element={<TransactionTable />} />
+        <Route path="event" element={<MatchDashBoard/>}/>
+        <Route path="event/:eventId" element={<Match />} />
+        </Route>
     </Routes>
   );
 };

@@ -10,6 +10,8 @@ import { FaPeopleGroup } from "react-icons/fa6";
 import { TiCloudStorageOutline } from "react-icons/ti";
 import { TbReport } from "react-icons/tb";
 import { MdOutlineRecordVoiceOver } from "react-icons/md";
+import { MdOutlineEmojiEvents } from "react-icons/md";
+
 
 const SidebarContainer = styled.div`
   width: 10vw; 
@@ -71,7 +73,7 @@ const Sidebar = () => {
           홈
         </MenuItem>
 
-        <MenuItem active={activeItem === "budget"} onClick={() => handleNavigation("budget",`/clubs/${clubId}/budget`)}>
+        <MenuItem active={activeItem === "budget"} onClick={() => handleNavigation("budget",`/clubs/${clubId}/budget_dashboard`)}>
           <PiMoney size="1.5vw" />
           예산관리
         </MenuItem>
@@ -81,6 +83,11 @@ const Sidebar = () => {
           회원관리
         </MenuItem>
 
+        <MenuItem active ={activeItem === 'event'} onClick={() => handleNavigation("event",`/clubs/${clubId}/event`)}>
+        <MdOutlineEmojiEvents size="1.5vw"/>
+          모임관리
+        </MenuItem>
+        
         <MenuItem active={activeItem === "storage"} onClick={() => setActiveItem("storage")}>
           <TiCloudStorageOutline size="1.5vw" />
           파일 저장소

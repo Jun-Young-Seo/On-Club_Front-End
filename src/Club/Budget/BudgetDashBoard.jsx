@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import { useEffect,useState } from 'react';
 import securedAPI from '../../Axios/SecuredAPI';
 import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const kakaoBankLogoSvg = "https://upload.wikimedia.org/wikipedia/commons/4/48/KakaoBank_logo.svg";
 
@@ -39,16 +40,25 @@ const CardHeader = styled.div`
 `;
 
   const Card = styled.div`
-  background: white;
-  padding: 1.5rem;
-  border-radius: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    background: white;
+    padding: 1.5rem;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;  /* ✅ 부드러운 효과 */
+
+    cursor: pointer; /* 마우스 포인터 변경 */
+
+    &:hover {
+      transform: scale(1.03); /* ✅ 약간 커짐 */
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12); /* ✅ 그림자 진하게 */
+    }
 
     .card-header {
-    display: flex;
-    align-items: center;
-  }
-`;
+      display: flex;
+      align-items: center;
+    }
+  `;
+
 
   const CardTitle = styled.div`
   color: #888;
@@ -94,10 +104,11 @@ const BankName = styled.div`
   font-weight: bold;
   text-transform: uppercase;
 `;
+
 const AccountCard = styled.div`
   flex: 1;
   width: 84%;
-  height : 65%;
+  height: 65%;
   background: #FEE500; /* ✅ 카카오뱅크 노란색 */
   color: black;
   border-radius: 12px;
@@ -107,7 +118,13 @@ const AccountCard = styled.div`
   justify-content: space-between;
   align-items: flex-start;
   cursor: pointer;
-  
+
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  }
 `;
 const AccountName = styled.div`
   font-size: 14px;
@@ -123,8 +140,15 @@ const TransactionTable = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-`;
 
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  }
+`;
 
 const TransactionRow = styled.div`
   display: grid;
@@ -179,6 +203,8 @@ const ColoredCell = styled(LightCell)`
     `;
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+
   const {clubId} = useParams();
   const [budgetInfo, setBudgetInfo] = useState({
     balance: 0,
@@ -216,7 +242,7 @@ const Dashboard = () => {
     <Container>
       {/* 상단 카드들 */}
       <CardGroup>
-        <Card>
+        <Card onClick={()=> navigate(`/clubs/${clubId}/budget_detail`)}>
             <CardHeader>
                 <img src={balanceIcon} alt="잔액 아이콘" />
             <div>
@@ -226,7 +252,7 @@ const Dashboard = () => {
             </CardHeader>
         </Card>
 
-        <Card>
+        <Card onClick={()=> navigate(`/clubs/${clubId}/budget_detail`)}>
             <CardHeader>
                 <img src={expenseIcon} alt="지출 아이콘" />
             <div>
@@ -236,7 +262,7 @@ const Dashboard = () => {
             </CardHeader>
         </Card>
 
-        <Card>
+        <Card onClick={()=> navigate(`/clubs/${clubId}/budget_detail`)}>
             <CardHeader>
                 <img src={incomeIcon} alt="수입 아이콘" />
             <div>
@@ -246,7 +272,7 @@ const Dashboard = () => {
             </CardHeader>
         </Card>
 
-        <Card>
+        <Card onClick={()=> navigate(`/clubs/${clubId}/budget_detail`)}>
             <CardHeader>
                 <img src={savingIcon} alt="수입 아이콘" />
             <div>
@@ -262,7 +288,7 @@ const Dashboard = () => {
         <Section>
   <div style={{ flex: 3.5 }}>
     <SectionTitle>최근 거래내역</SectionTitle>
-    <TransactionTable>
+    <TransactionTable onClick={()=> navigate(`/clubs/${clubId}/budget_detail`)}>
       {transactions.map((tx, idx) => (
         <TransactionRow key={idx}>
           <TitleCell>{tx.transactionDescription}</TitleCell>
