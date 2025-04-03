@@ -49,7 +49,7 @@ securedAPI.interceptors.response.use(
           sessionStorage.setItem('accessToken', newAccessToken);
           // axios 인스턴스의 기본 헤더와 재시도 요청의 헤더 모두 업데이트
           securedAPI.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
-          error.config.headers['Authorization'] = `Bearer ${newAccessToken}`;
+          error.config.headers['Authorization'] = `Bearer ${newAccessToken}`;   
           
           return securedAPI.request(error.config);
         } catch (refreshError) {
