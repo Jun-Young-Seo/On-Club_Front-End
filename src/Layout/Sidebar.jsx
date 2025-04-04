@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
-
+import { useEffect } from "react";
+import securedAPI from "../Axios/SecuredAPI";
+import Swal from "sweetalert2";
 //React-icons
 import { FiHome } from "react-icons/fi";
 import { PiMoney } from "react-icons/pi";
@@ -56,14 +58,42 @@ const MenuItem = styled.li`
 
 const Sidebar = () => {
   const [activeItem, setActiveItem] = useState("home");
+  const [myClubRole, setMyClubRole] = useState("");
   const navigate = useNavigate();
   const {clubId} = useParams();
 
-  const handleNavigation = (menu, path) => {
+  const handleNavigation = (menu, path, allowedRoles = null) => {
+    if (allowedRoles && !allowedRoles.includes(myClubRole)) {
+      Swal.fire({
+        icon: "warning",
+        title: "접근 권한 없음",
+        text: "이 기능은 운영진만 이용할 수 있습니다.",
+        confirmButtonColor: "#e74c3c",
+      });
+      return;
+    }
+  
     setActiveItem(menu);
     navigate(path);
   };
+  
+  useEffect(() => {
+    const fetchMyRoleInClub = async () => {
+      const userId = sessionStorage.getItem("userId");
+      if (!userId || !clubId) return;
+  
+      try {
+        const res = await securedAPI.get(`/api/membership/my-role?userId=${userId}&clubId=${clubId}`);
+        console.log(res);
+        setMyClubRole(res.data.role); 
+      } catch (err) {
+        console.error("내 클럽 권한 조회 실패", err);
+      }
+    };
 
+    fetchMyRoleInClub();
+  }, [clubId]);
+  
 
   return (
     <SidebarContainer>
@@ -73,17 +103,17 @@ const Sidebar = () => {
           홈
         </MenuItem>
 
-        <MenuItem active={activeItem === "budget"} onClick={() => handleNavigation("budget",`/clubs/${clubId}/budget_dashboard`)}>
+        <MenuItem active={activeItem === "budget"} onClick={() => handleNavigation("budget",`/clubs/${clubId}/budget_dashboard`,["MANAGER", "LEADER"])}>
           <PiMoney size="1.5vw" />
           예산관리
         </MenuItem>
 
-        <MenuItem active={activeItem === "members"} onClick={() => setActiveItem("members")}>
+        <MenuItem active={activeItem === "members"} onClick={() => handleNavigation("members", `/clubs/${clubId}/membership_detail`,["MANAGER", "LEADER"])}>
           <FaPeopleGroup size="1.5vw" />
           회원관리
         </MenuItem>
 
-        <MenuItem active ={activeItem === 'event'} onClick={() => handleNavigation("event",`/clubs/${clubId}/event`)}>
+        <MenuItem active ={activeItem === 'event'} onClick={() => handleNavigation("event",`/clubs/${clubId}/event`,["MANAGER", "LEADER"])}>
         <MdOutlineEmojiEvents size="1.5vw"/>
           모임관리
         </MenuItem>

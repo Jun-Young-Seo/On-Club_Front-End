@@ -4,7 +4,7 @@ import securedAPI from "../Axios/SecuredAPI";
 import { useParams } from "react-router-dom";
 import { DEFAULT_IMAGES, DEFAULT_BACKGROUND_COLORS } from "../Constants/Default";
 import { useNavigate } from "react-router-dom";
-
+import Swal from "sweetalert2";
 const Container = styled.div`
   width: 80%;
   margin: auto;
@@ -136,6 +136,24 @@ const ClubDetailPage = () => {
 
   if (!club) return <p>Loading...</p>;
 
+  const handleMemberButtonClick = async () => {
+    const userId = sessionStorage.getItem("userId");
+  
+    try {
+      await securedAPI.post(`/api/membership/join/request`, {
+        userId: userId,
+        clubId: clubId
+      });
+  
+      // 성공 알림
+      Swal.fire("가입 신청이 완료되었습니다.", "빨리 검토해서 응답할게요.😊", "success");
+  
+    } catch (err) {
+      console.error("가입 처리 중 오류 발생:", err);
+      Swal.fire("오류 발생", "가입 신청에 실패했습니다. 잠시 후 다시 시도해주세요.", "error");
+    }
+  };
+  
   return (
     <Container>
       {/* 🔹 상단 배경 + 로고 */}
@@ -196,7 +214,7 @@ const ClubDetailPage = () => {
 
       {/* 🔹 버튼들 */}
       <ButtonContainer>
-        <Button primary>정회원 가입하기</Button>
+        <Button primary onClick={handleMemberButtonClick}>정회원 가입하기</Button>
         <Button>게스트로 참여하기</Button>
         <Button onClick={() => navigate(`/clubs/${clubId}/calendar`)}>📅 일정 확인하기</Button>
       </ButtonContainer>

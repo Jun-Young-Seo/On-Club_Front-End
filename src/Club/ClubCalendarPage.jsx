@@ -4,6 +4,7 @@ import securedAPI from "../Axios/SecuredAPI";
 import { useParams } from "react-router-dom";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
+import Swal from "sweetalert2";
 
 const Container = styled.div`
   width: 80%;
@@ -158,18 +159,30 @@ const ClubCalendarPage = () => {
 
   const handleAttendEvent = async () => {
     if (!selectedEvent) return;
-
+  
     try {
-      const response = await securedAPI.post("/api/guest/attend", {
+      await securedAPI.post("/api/guest/attend/request", {
         userId: sessionStorage.getItem('userId'),
         eventId: selectedEvent.eventId,
       });
-      alert("✅ 이벤트 참석이 완료되었습니다!");
+  
+      Swal.fire({
+        icon: "success",
+        title: "참석 신청이 완료됐습니다.",
+        text: "최대한 빨리 답변드릴게요! ☺️",
+        confirmButtonColor: "#5fbd7b"
+      });
+  
     } catch (error) {
-      alert(`❌ 참석 실패: ${error.response?.data || "오류 발생"}`);
+      Swal.fire({
+        icon: "error",
+        title: "참석 실패",
+        text: error.response?.data || "알 수 없는 오류가 발생했습니다.",
+        confirmButtonColor: "#e74c3c"
+      });
     }
   };
-
+  
 
   return (
     <Container>

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { unSecuredAPI } from "./UnsecuredAPI";
+import Swal from "sweetalert2";
 // import apiClient from "./apiClient";  // Refresh Token 요청을 위한 기본 API 클라이언트
 
 const securedAPI = axios.create({
@@ -26,6 +27,7 @@ securedAPI.interceptors.request.use(
 securedAPI.interceptors.response.use(
     (response) => response,
     async (error) => {
+      console.log("error : ",error);
       if (error.response?.status === 401) { // Unauthorized
         try {
           // sessionStorage에서 refresh 토큰을 가져옴 (refresh 토큰이 반드시 저장되어 있어야 함)
@@ -57,7 +59,17 @@ securedAPI.interceptors.response.use(
           return Promise.reject(refreshError);
         }
       }
-      return Promise.reject(error);
+      else if(error.response?.status === 403){ //Forbidden
+        console.log("************************************************************");
+        Swal.fire({
+          icon: "warning",
+          title: "접근 권한이 없습니다",
+          text: "해당 기능은 운영진만 접근할 수 있습니다.",
+          confirmButtonColor: "#e74c3c",
+        });
+        return;
+      }
+      return Promise.resolve(null);
     }
   );
   

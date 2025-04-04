@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { login } from "../Axios/UnsecuredAPI";
 import loginBgImg from "../assets/images/login_bg.jpg";
+import Swal from "sweetalert2";
 
 const PageContainer = styled.div`
   height: 90vh;
@@ -153,19 +154,46 @@ const Login = () => {
   const handleLogin = async () => {
     try {
       const response = await login({ userTel, password });
+  
       sessionStorage.setItem("userId", response.data.userId);
       sessionStorage.setItem("accessToken", response.data.accessToken);
       sessionStorage.setItem("refreshToken", response.data.refreshToken);
+      
       setLoginFailed(false);
-      navigate("/clubs");
+  
+      Swal.fire({
+        icon: "success",
+        title: "로그인 성공!",
+        text: `${response.data.userName}님, 환영합니다 😊`,
+        confirmButtonColor: "#5fbd7b",
+        timer: 1500,
+        showConfirmButton: false
+      });
+  
+      setTimeout(() => navigate("/clubs"), 1600);
+  
     } catch (error) {
+      console.log(error);
       if (error.response?.status === 401) {
         setLoginFailed(true);
+        Swal.fire({
+          icon: "error",
+          title: "로그인 실패",
+          text: "전화번호 또는 비밀번호가 올바르지 않습니다.",
+          confirmButtonColor: "#e74c3c"
+        });
       } else {
         console.error(error);
+        Swal.fire({
+          icon: "error",
+          title: "서버 오류",
+          text: "잠시 후 다시 시도해주세요.",
+          confirmButtonColor: "#e74c3c"
+        });
       }
     }
   };
+  
 
   return (
     <PageContainer>
