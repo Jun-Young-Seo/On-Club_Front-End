@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 import dayjs from "dayjs";
 import Swal from "sweetalert2";
 import MembershipEditModal from "./MembershipEditModal";
+import MembershipAddModal from "./MembershipAddModal";
 // ─── Styled Components ───
 const Container = styled.div`
   width: 90%;
@@ -23,6 +24,7 @@ const TopBar = styled.div`
 
 const Title = styled.h2`
   font-size: 1.5rem;
+  margin-right : 15rem;
 `;
 
 const Controls = styled.div`
@@ -119,12 +121,28 @@ const EditButton = styled.button`
 `;
 
 
+const AddButton = styled.button`
+  background-color: #5fbd7b;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  &:hover {
+    background-color: #4caf6e;
+  }
+`;
+
+
 // ─── Component ───
 const MembershipTable = () => {
   const { clubId } = useParams();
   const [memberships, setMemberships] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [sortKey, setSortKey] = useState("joinedAt");
+  const [showAddModal, setShowAddModal] = useState(false);
 
   //수정 모달
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -173,25 +191,71 @@ const MembershipTable = () => {
       }
     });
 
+    const handleAddButtonClick = ()=>{
+      setShowAddModal(true);
+    };
+
+
+  const handleModalSubmit = async (form, isExistingUser) => {
+    console.log("추가할 회원:", form);
+    console.log("is already exist ? ",isExistingUser);
+    try{
+      //alreaddy user
+      if(isExistingUser){
+        await securedAPI.post(`/api/membership/join/direct-user?userTel=${form.userTel}&clubId=${clubId}`);
+        Swal.fire({
+          icon: "success",
+          title: "신규 가입 완료",
+          text: "신규 회원이 성공적으로 가입되었습니다.",
+          confirmButtonColor: "#5fbd7b"
+        });
+
+      }
+      else{
+          await securedAPI.post(`/api/membership/join/direct-not-user?clubId=${clubId}`, {
+          userName: form.userName,
+          userTel: form.userTel,
+          password: form.password,
+          region: form.region,
+          gender: form.gender,
+          birthDate: form.birthDate,
+          career: parseInt(form.career),
+        });
+        Swal.fire({
+          icon: "success",
+          title: "신규 가입 완료",
+          text: "신규 회원이 성공적으로 가입되었습니다.",
+          confirmButtonColor: "#5fbd7b"
+        });
+  
+      }
+    }
+    catch(error){
+      Swal.fire("오류 발생", "회원 추가에 실패했습니다.", "error");
+    }
+    setShowAddModal(false);
+  };
+
   return (
     <Container>
       <TopBar>
-        <Title>클럽 회원 목록</Title>
-        <Controls>
-          <SearchInput
-            placeholder="이름 또는 전화번호 검색"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
-          <Select value={sortKey} onChange={(e) => setSortKey(e.target.value)}>
-            <option value="joinedAt">가입일순</option>
-            <option value="career">구력순</option>
-            <option value="gender">성별순</option>
-            <option value="role">역할순</option>
-            <option value="attendanceRate">출석률순</option>
-          </Select>
-        </Controls>
-      </TopBar>
+          <Title>클럽 회원 목록</Title>
+          <Controls>
+            <AddButton onClick={()=>handleAddButtonClick()}>회원 추가하기</AddButton>
+            <SearchInput
+              placeholder="이름 또는 전화번호 검색"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+            <Select value={sortKey} onChange={(e) => setSortKey(e.target.value)}>
+              <option value="joinedAt">가입일순</option>
+              <option value="career">구력순</option>
+              <option value="gender">성별순</option>
+              <option value="role">역할순</option>
+              <option value="attendanceRate">출석률순</option>
+            </Select>
+          </Controls>
+        </TopBar>
       <Table>
   <thead>
     <tr>
@@ -290,6 +354,13 @@ const MembershipTable = () => {
         });
       }
     }}
+    
+  />
+)}
+{showAddModal && (
+  <MembershipAddModal
+    onClose={() => setShowAddModal(false)}
+    onSubmit={handleModalSubmit}
   />
 )}
 

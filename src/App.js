@@ -15,10 +15,11 @@ import Match from "./Match/Match";
 import MatchDashBoard from "./Match/MatchDashBoard";
 import MembershipTable from "./Club/Membership/MembershipTable";
 import NotificationPage from "./User/Notification/NotificationPage";
+import { NotificationProvider } from "./User/Notification/NotificationContext";
 
 const App = () => {
   return (
-    <>
+    <NotificationProvider>
       <Header /> {/* 항상 보이게 */}
       <Routes>
         {/* 메인/회원가입/로그인 */}
@@ -43,7 +44,8 @@ const App = () => {
           <Route path="membership_detail" element={<MembershipTable />} />
         </Route>
       </Routes>
-    </>
+    </NotificationProvider>
+
   );
 };
 

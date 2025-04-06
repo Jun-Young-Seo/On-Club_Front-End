@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import { FiBell } from "react-icons/fi";
 import { IoClose } from "react-icons/io5";
 import securedAPI from "../Axios/SecuredAPI";
+import { NotificationContext } from "../User/Notification/NotificationContext";
 
 // ─── Styled Components ───
 const HeaderContainer = styled.header`
@@ -208,14 +209,11 @@ const EmojiIcon = styled.span`
 
 // ─── Component ───
 const Header = () => {
+  const { unreadNotifications, fetchNotifications, loading } = useContext(NotificationContext);
   const navigate = useNavigate();
   const userId = sessionStorage.getItem("userId");
-
-  const [notifications, setNotifications] = useState([]);
   const [showNoti, setShowNoti] = useState(false);
-  const [loading, setLoading] = useState(false);
   const dropdownRef = useRef(null);
-  const unreadNotifications = notifications.filter(n => !n.read);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -232,20 +230,6 @@ const Header = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
-  const fetchNotifications = useCallback(async () => {
-    if (!userId) return;
-    setLoading(true);
-    try {
-      const res = await securedAPI.get(`/api/notification/all?userId=${userId}`);
-      const notis = Array.isArray(res.data) ? res.data : [];
-      setNotifications(notis);
-    } catch (err) {
-      console.error("🔔 알림 로딩 실패:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
 
   useEffect(() => {
     fetchNotifications();

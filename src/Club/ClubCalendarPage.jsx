@@ -114,7 +114,6 @@ const ClubCalendarPage = () => {
   }, [clubId]);
 
   // 📌 날짜를 YYYY-MM-DD 형식으로 변환하는 함수
-  const formatDate = (date) => date.toISOString().split("T")[0];
 
   // 📌 특정 날짜가 이벤트 기간 내에 포함되는지 확인하는 함수
   const isWithinEventPeriod = (date, event) => {
@@ -162,7 +161,7 @@ const ClubCalendarPage = () => {
   
     try {
       await securedAPI.post("/api/guest/attend/request", {
-        userId: sessionStorage.getItem('userId'),
+        userId: sessionStorage.getItem("userId"),
         eventId: selectedEvent.eventId,
       });
   
@@ -170,18 +169,28 @@ const ClubCalendarPage = () => {
         icon: "success",
         title: "참석 신청이 완료됐습니다.",
         text: "최대한 빨리 답변드릴게요! ☺️",
-        confirmButtonColor: "#5fbd7b"
+        confirmButtonColor: "#5fbd7b",
       });
   
     } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "참석 실패",
-        text: error.response?.data || "알 수 없는 오류가 발생했습니다.",
-        confirmButtonColor: "#e74c3c"
-      });
+      if (error.response?.status === 409) {
+        Swal.fire({
+          icon: "error",
+          title: "이미 참석 신청됨",
+          text: "이미 참석 신청을 하셨습니다. 곧 연락드릴게요 😊",
+          confirmButtonColor: "#5fbd7b",
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "참석 실패",
+          text: error.response?.data || "알 수 없는 오류가 발생했습니다.",
+          confirmButtonColor: "#e74c3c",
+        });
+      }
     }
   };
+  
   
 
   return (
