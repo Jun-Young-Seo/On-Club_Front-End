@@ -85,7 +85,7 @@ const Sidebar = () => {
       try {
         const res = await securedAPI.get(`/api/membership/my-role?userId=${userId}&clubId=${clubId}`);
         console.log(res);
-        setMyClubRole(res.data.role); 
+        setMyClubRole(res.data); 
       } catch (err) {
         console.error("내 클럽 권한 조회 실패", err);
       }

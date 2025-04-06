@@ -3,7 +3,7 @@ import styled from "styled-components";
 import Swal from "sweetalert2";
 import securedAPI from "../../Axios/SecuredAPI";
 
-// ─── Styled Components ───
+// ─── Styled Components (기존과 동일) ───
 const ModalBackground = styled.div`
   position: fixed;
   top: 0; left: 0;
@@ -89,7 +89,6 @@ const ActionButton = styled.button`
   }
 `;
 
-// ─── Emoji Components ───
 const TitleEmoji = styled.span`
   font-size: 1.9rem;
   margin-right: 8px;
@@ -101,16 +100,15 @@ const Emoji = styled.span`
 `;
 
 // ─── Component ───
-const JoinRequestModal = ({ notification, onApprove, onReject, onClose }) => {
-//   const clubId = notification.targetId;
-
+const GuestAttendRequestModal = ({ notification, onApprove, onReject, onClose }) => {
+  const userId = notification.referenceId;
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const res = await securedAPI.get(`/api/user/info?userId=${notification.referenceId}`);
+        const res = await securedAPI.get(`/api/user/info?userId=${userId}`);
         setUserInfo(res.data);
       } catch (err) {
         console.error("❌ 유저 정보 불러오기 실패:", err);
@@ -120,13 +118,13 @@ const JoinRequestModal = ({ notification, onApprove, onReject, onClose }) => {
     };
 
     fetchUserInfo();
-  }, [notification.referenceId]);
+  }, [userId]);
 
   const handleApprove = async () => {
     const result = await Swal.fire({
       icon: "question",
-      title: "가입 요청 승인",
-      text: `${userInfo.userName} 님을 승인하시겠습니까?`,
+      title: "게스트 참석 승인",
+      text: `${userInfo.userName} 님의 참석을 승인하시겠습니까?`,
       showCancelButton: true,
       confirmButtonText: "승인",
       cancelButtonText: "취소",
@@ -142,7 +140,7 @@ const JoinRequestModal = ({ notification, onApprove, onReject, onClose }) => {
   const handleReject = async () => {
     const result = await Swal.fire({
       icon: "warning",
-      title: "가입 요청 거절",
+      title: "게스트 참석 거절",
       text: `${userInfo.userName} 님의 요청을 거절하시겠습니까?`,
       showCancelButton: true,
       confirmButtonText: "거절",
@@ -172,10 +170,10 @@ const JoinRequestModal = ({ notification, onApprove, onReject, onClose }) => {
     <ModalBackground>
       <ModalContainer>
         <Title>
-          <TitleEmoji>🙋🏻</TitleEmoji>
-          가입 요청
+          <TitleEmoji>📅</TitleEmoji>
+          게스트 참석 요청
         </Title>
-        <Subtitle>아래 정보를 확인하고 가입 요청을 처리해주세요.</Subtitle>
+        <Subtitle>아래 정보를 확인하고 요청을 처리해주세요.</Subtitle>
 
         <InfoTable>
           <InfoRow>
@@ -210,4 +208,4 @@ const JoinRequestModal = ({ notification, onApprove, onReject, onClose }) => {
   );
 };
 
-export default JoinRequestModal;
+export default GuestAttendRequestModal;

@@ -141,8 +141,8 @@ const ClubDetailPage = () => {
   
     try {
       await securedAPI.post(`/api/membership/join/request`, {
-        userId: userId,
-        clubId: clubId
+        userId,
+        clubId,
       });
   
       // 성공 알림
@@ -150,9 +150,26 @@ const ClubDetailPage = () => {
   
     } catch (err) {
       console.error("가입 처리 중 오류 발생:", err);
-      Swal.fire("오류 발생", "가입 신청에 실패했습니다. 잠시 후 다시 시도해주세요.", "error");
+  
+      //중복신청은 서버에서 409 CONFOLICT 반환
+      if (err.response?.status === 409) {
+        Swal.fire({
+          icon: "error",
+          title: "이미 가입 신청됨",
+          text: "이미 가입 신청을 하셨습니다. 곧 연락드릴게요 😊",
+          confirmButtonColor: "#5fbd7b"
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "오류 발생",
+          text: "가입 신청에 실패했습니다. 잠시 후 다시 시도해주세요.",
+          confirmButtonColor: "#e74c3c"
+        });
+      }
     }
   };
+  
   
   return (
     <Container>

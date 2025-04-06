@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState, useContext } from "react";
 import styled from "styled-components";
 import { IoClose } from "react-icons/io5";
 import securedAPI from "../../Axios/SecuredAPI";
 import Swal from "sweetalert2";
 import NotificationModalFactory from "./NotificationModalFactory";
+import { NotificationContext } from "./NotificationContext";
 
 const PageContainer = styled.div`
   padding: 80px 10%;
@@ -18,7 +19,7 @@ const PageTitle = styled.h2`
 `;
 
 const RefreshButton = styled.button`
-  font-size: 1rem;
+  font-size: 1.3rem;
   background: none;
   border: none;
   cursor: pointer;
@@ -81,87 +82,103 @@ const CloseButton = styled(IoClose)`
     color: #e74c3c;
   }
 `;
+const EmptyState = styled.div`
+  padding: 3rem 2rem;
+  text-align: center;
+  font-size: 1.1rem;
+  color: #888;
+  border-radius: 12px;
+  background: #f9f9f9;
+  border: 1px dashed #ddd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+`;
 
+const EmptyEmoji = styled.div`
+  font-size: 2.5rem;
+`;
 const NotificationPage = () => {
-  const userId = sessionStorage.getItem("userId");
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const { notifications, fetchNotifications, markAsRead, deleteNotification } = useContext(NotificationContext);
+
   const [selectedNotification, setSelectedNotification] = useState(null);
   
-  const handleNotificationClick = (noti) => {
-    console.log("noti:",noti);
-    setSelectedNotification(noti);
-    console.log("selectedNotification", selectedNotification);
-
+  const handleNotificationClick = async (noti) => {
+    try {
+      await markAsRead(noti.notificationId);
+      setSelectedNotification(noti);
+    } catch (err) {
+      Swal.fire("읽기 실패", "알림을 읽는 중 문제가 발생했습니다.", "error");
+    }
   };
+
   const closeModal = () => {
     setSelectedNotification(null);
   };
     
-  const fetchNotifications = useCallback(async () => {
-    if (!userId) return;
-    setLoading(true);
-    try {
-      const res = await securedAPI.get(`/api/notification/all?userId=${userId}`);
-      if (Array.isArray(res.data)) {
-        setNotifications(res.data);
-      }
-    } catch (err) {
-      console.error("🔔 전체 알림 로딩 실패:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
 
-  useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
-
-  const handleMarkAsRead = async (id) => {
+  const handleDeleteButtonClick = async (id) => {
     try {
-      await securedAPI.patch(`/api/notification/read?notificationId=${id}`);
-      fetchNotifications();
+      await deleteNotification(id);
+      Swal.fire("삭제 완료", "알림이 삭제되었습니다.", "success");
     } catch (err) {
-      console.error("읽음 처리 실패", err);
+      Swal.fire("삭제 실패", "알림을 삭제하는 데 실패했습니다.", "error");
     }
   };
+
   const handleApprove = async (noti) => {
     try {
-      await securedAPI.post(`/api/membership/join/approve`, {
-        userId: noti.referenceId,
-        clubId: noti.targetId
-      });
-      Swal.fire("가입 승인 완료!", "해당 유저가 가입되었습니다.", "success");
-      await deleteNoti(noti);
+      if (noti.type === "JOIN_REQUEST") {
+        await securedAPI.post(`/api/membership/join/approve`, {
+          userId: noti.referenceId,
+          clubId: noti.targetId
+        });
+        Swal.fire("가입 승인 완료!", "해당 유저가 가입되었습니다.", "success");
+  
+      } else if (noti.type === "GUEST_REQUEST") {
+        await securedAPI.post(`/api/guest/attend/approve`, {
+          userId: noti.referenceId,
+          eventId: noti.targetId
+        });
+        Swal.fire("게스트 승인 완료!", "참석 요청을 승인했습니다.", "success");
+      }
+  
+      await deleteNotification(noti.notificationId);
       setSelectedNotification(null);
+  
     } catch (err) {
-      Swal.fire("에러 발생", "가입 승인 중 문제가 발생했습니다.", "error");
+      Swal.fire("에러 발생", "승인 처리 중 문제가 발생했습니다.", "error");
     }
   };
   
   const handleReject = async (noti) => {
     try {
-      await securedAPI.post(`/api/membership/join/reject`, {
-        userId: noti.referenceId,
-        clubId: noti.targetId
-      });
-      Swal.fire("가입 거절 처리됨", "해당 유저의 요청을 거절했습니다.", "info");
-      await deleteNoti(noti);
+      if (noti.type === "JOIN_REQUEST") {
+        await securedAPI.post(`/api/membership/join/reject`, {
+          userId: noti.referenceId,
+          clubId: noti.targetId
+        });
+        Swal.fire("가입 거절", "가입 요청을 거절했습니다.", "info");
+  
+      } else if (noti.type === "GUEST_REQUEST") {
+        await securedAPI.post(`/api/guest/attend/reject`, {
+          userId: noti.referenceId,
+          eventId: noti.targetId
+        });
+        Swal.fire("게스트 거절", "참석 요청을 거절했습니다.", "info");
+      }
+  
+      await deleteNotification(noti.notificationId);
       setSelectedNotification(null);
+  
     } catch (err) {
-      Swal.fire("에러 발생", "가입 거절 중 문제가 발생했습니다.", "error");
+      Swal.fire("에러 발생", "거절 처리 중 문제가 발생했습니다.", "error");
     }
   };
   
-  const deleteNoti = async (noti) =>{
-    try{
-      await securedAPI.delete(`/api/notification?notificationId=${noti.notificationId}`);
-      fetchNotifications();
-    }
-    catch(err){
-      Swal.fire("에러 발생", "가입 거절 중 문제가 발생했습니다.", "error");
-    }
-  }
+
+
   
   const getEmojiByType = (type) => {
     const map = {
@@ -184,17 +201,19 @@ const NotificationPage = () => {
         전체 알림
         <RefreshButton onClick={fetchNotifications}>🔄 새로고침</RefreshButton>
       </PageTitle>
-
-      {loading ? (
-        <div>불러오는 중...</div>
-      ) : (
         <NotificationList>
           {notifications.length === 0 ? (
-            <div>알림이 없습니다.</div>
+              <EmptyState>
+              <EmptyEmoji>📭</EmptyEmoji>
+              도착한 쪽지가 없습니다.
+            </EmptyState>
           ) : (
             notifications.map((noti) => (
               <NotificationCard key={noti.notificationId} read={noti.read} onClick={() => handleNotificationClick(noti)}>
-              <CloseButton onClick={() => handleMarkAsRead(noti.notificationId)} />
+              <CloseButton onClick={(e) => {
+                 e.stopPropagation();
+                 handleDeleteButtonClick(noti.notificationId)
+                 }} />
                 <TitleRow>
                   <Emoji>{getEmojiByType(noti.type)}</Emoji>
                   {noti.title}
@@ -205,7 +224,6 @@ const NotificationPage = () => {
             ))
           )}
         </NotificationList>
-      )}
           {selectedNotification && (
           <NotificationModalFactory
             notification={selectedNotification}
