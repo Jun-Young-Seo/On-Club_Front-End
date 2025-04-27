@@ -5,6 +5,7 @@ import { FiBell } from "react-icons/fi";
 import { IoClose } from "react-icons/io5";
 import securedAPI from "../Axios/SecuredAPI";
 import { NotificationContext } from "../User/Notification/NotificationContext";
+import logo from "../assets/images/t.png";
 
 // ─── Styled Components ───
 const HeaderContainer = styled.header`
@@ -33,9 +34,11 @@ const LogoContainer = styled.div`
 `;
 
 const LogoIcon = styled.div`
-  width: 20px;
-  height: 20px;
-  background: linear-gradient(45deg, #ff3d00, #ff9100, #ffeb3b);
+  width: 40px;
+  height: 40px;
+  background-image: url(${logo});
+  background-size: cover;
+  background-position: center;
   border-radius: 4px;
   margin-right: 8px;
 `;
@@ -262,7 +265,7 @@ const Header = () => {
     <HeaderContainer>
       <LogoContainer onClick={() => navigate("/clubs")}>
         <LogoIcon />
-        On<strong>-Club</strong>
+        <strong>On-Club</strong>
       </LogoContainer>
 
       <NavLinks>
