@@ -4,6 +4,9 @@ import incomeIcon from '../../assets/images/income.png';
 import expenseIcon from '../../assets/images/expense.png';
 import savingIcon from '../../assets/images/saving.png';
 import styled from 'styled-components';
+import IncomeChart from './Chart/IncomeChart';
+import ExpenseChart from './Chart/ExpenseChart';
+import MonthlyChart from './Chart/MonthlyChart';
 
 import { useEffect,useState } from 'react';
 import securedAPI from '../../Axios/SecuredAPI';
@@ -80,18 +83,28 @@ const CardHeader = styled.div`
   gap: 3rem;
 `;
 
-  const DebitCredit = styled.div`
-  flex: 1.5;
-  background: white;
-  padding: 1.5rem;
-  border-radius: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+
+const ChartArea = styled.div`
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin: 20px 0;
 `;
 
-  const OverviewImage = styled.img`
-  width: 100%;
-  margin-top: 1rem;
+const ChartBox = styled.div`
+  flex: 1 1 30%;
+  min-width: 250px;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 10px;
+  background: #fff;
 `;
+
 
 
 const BankLogo = styled.img`
@@ -204,7 +217,9 @@ const ColoredCell = styled(LightCell)`
 
 const Dashboard = () => {
   const navigate = useNavigate();
-
+  const [incomeData, setIncomeData] = useState([]);
+  const [expenseData, setExpenseData] = useState([]);
+  const [monthlyData, setMonthlyData] = useState([]);
   const {clubId} = useParams();
   const [budgetInfo, setBudgetInfo] = useState({
     balance: 0,
@@ -230,6 +245,17 @@ const Dashboard = () => {
         setAccount(accountResponse.data);
         console.log('account data : ',accountResponse.data);
 
+        const incomeResponse = await securedAPI.get(`/api/budget/chart-income?clubId=${clubId}`);
+        setIncomeData(incomeResponse.data);
+        console.log("income Data : ", incomeResponse.data);
+
+        const expenseResponse = await securedAPI.get(`/api/budget/chart-expense?clubId=${clubId}`);
+        setExpenseData(expenseResponse.data);
+        console.log("expense Data : ",expenseResponse.data);
+
+        const monthlyResponse = await securedAPI.get(`/api/budget/chart-monthly?clubId=${clubId}`);
+        setMonthlyData(monthlyResponse.data);
+        console.log("monthlyData : ",monthlyResponse.data);
       } catch (error) {
         console.error("❌ 대시보드 데이터 가져오기 실패:", error);
       }
@@ -327,9 +353,18 @@ const Dashboard = () => {
 <Section>
   <div style={{ flex: 1.5 }}>
     <SectionTitle>월별 모아보기</SectionTitle>
-    <DebitCredit>
-      <OverviewImage src="https://yourserver.com/graph-image.png" alt="Debit Credit Chart" />
-    </DebitCredit>
+    <ChartArea>
+    <ChartBox>
+      <MonthlyChart monthlyData={monthlyData}/>
+  </ChartBox>
+  <ChartBox>
+    <IncomeChart incomeData={incomeData} />
+  </ChartBox>
+  <ChartBox>
+    <ExpenseChart expenseData={expenseData} />
+  </ChartBox>
+</ChartArea>
+
   </div>
 </Section>
 
