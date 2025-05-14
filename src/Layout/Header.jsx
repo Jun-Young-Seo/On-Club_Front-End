@@ -263,7 +263,7 @@ const Header = () => {
 
   return (
     <HeaderContainer>
-      <LogoContainer onClick={() => navigate("/clubs")}>
+      <LogoContainer onClick={() => navigate("/")}>
         <LogoIcon />
         <strong>On-Club</strong>
       </LogoContainer>
