@@ -5,7 +5,7 @@ import RegionModal from "./RegionModal";
 import signupBgImg from "../assets/images/signup_bg.jpg";
 
 const PageContainer = styled.div`
-  height: 90vh;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -15,6 +15,7 @@ const PageContainer = styled.div`
 
 const ContentWrapper = styled.div`
   display: flex;
+  margin-top:20px;
   width: 950px;
   background: white;
   border-radius: 20px;
@@ -50,7 +51,7 @@ const InputField = styled.div`
 `;
 
 const Input = styled.input`
-  width: 100%;
+  width: 94%;
   padding: 12px;
   border: 1.5px solid #ddd;
   border-radius: 10px;

@@ -5,6 +5,8 @@ import securedAPI from "../Axios/SecuredAPI";
 import { useNavigate } from "react-router-dom";
 import { DEFAULT_IMAGES, DEFAULT_BACKGROUND_COLORS } from "../Constants/Default";
 
+import ClubCreateModal from "./ClubCreateModal";
+
 
 const PageContainer = styled.div`
   padding: 20px;
@@ -89,7 +91,20 @@ const ClubDescription = styled.p`
   margin-top: 10px;
 `;
 
+const CreateButton = styled.button`
+  align-self: flex-end;
+  margin-bottom: 20px;
+  padding: 10px 16px;
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+`;
+
 const ClubListPage = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [clubs, setClubs] = useState([]);
   const navigate = useNavigate();
 
@@ -106,12 +121,23 @@ const ClubListPage = () => {
     fetchClubs();
   }, []);
 
+  const handleCreateClub = async (form) => {
+    try {
+      await securedAPI.post("/api/club/add", form); 
+      setIsModalOpen(false);
+      window.location.reload(); // 새로고침 대신 clubs만 다시 fetch해도 됨
+    } catch (err) {
+      console.error("클럽 생성 실패:", err);
+    }
+  };
+  
   const handleCardClicked = (clubId)=>{
     navigate(`/clubs/${clubId}`);
   }
 
   return (
     <PageContainer>
+        <CreateButton onClick={() => setIsModalOpen(true)}>+ 클럽 추가</CreateButton>
       <ClubGrid>
         {clubs.map((club, index) => (
           <ClubCard key={club.club_id} onClick={()=>handleCardClicked(club.club_id)}>
@@ -124,6 +150,13 @@ const ClubListPage = () => {
           </ClubCard>
         ))}
       </ClubGrid>
+      {isModalOpen && (
+    <ClubCreateModal
+      onClose={() => setIsModalOpen(false)}
+      onSubmit={handleCreateClub}
+        />
+      )}
+
     </PageContainer>
   );
 };
