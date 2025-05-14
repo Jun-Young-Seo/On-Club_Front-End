@@ -3,7 +3,7 @@ import { unSecuredAPI } from "./UnsecuredAPI";
 // import apiClient from "./apiClient";  // Refresh Token 요청을 위한 기본 API 클라이언트
 
 const securedAPI = axios.create({
-    baseURL: 'http://localhost:8080',
+    baseURL: 'https://api.on-club.co.kr',
     headers: {
         'Content-Type': 'application/json',
     },

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import dayjs from "dayjs";
 import TransactionModal from "./TransactionModifyModal";
 import securedAPI from "../../Axios/SecuredAPI";
 import TransactionCreateModal from "./TrasnactionCreateModal";
 import Accounts from "./Accounts";
+import ExcelUploadModal from "./ExcelUploadModal";
 
 const Container = styled.div`
   width: 90%;
@@ -152,6 +154,23 @@ const AddTransactionButton = styled.button`
   }
 `;
 
+const AddTransactionExcelButton = styled.button`
+  background-color: #2ecc71;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+
+  &:hover {
+    background-color: #27ae60;
+  }
+`;
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 10px; /* 버튼 사이 간격 */
+`;
 
 const TransactionTable = () => {
   const [transactions, setTransactions] = useState([]);
@@ -164,6 +183,9 @@ const TransactionTable = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
+
+  const {clubId} = useParams();
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -221,10 +243,48 @@ const TransactionTable = () => {
     setTransactions([...transactions, newTransaction]);
   };
   
+  const handleExcelFileUpload = (file, password) => {
+    const userId = sessionStorage.getItem('userId');
+    const accountId = selectedAccount;
+  
+    // 검증
+    if (!userId || !accountId || !clubId || !file || !password) {
+      console.error('필수 데이터 누락:', { userId, accountId, clubId, file, password });
+      return Promise.reject('필수 데이터 누락');
+    }
+    console.log(file);
+    const formData = new FormData();
+    formData.append('userId', userId);
+    formData.append('accountId', accountId);
+    formData.append('clubId', clubId);
+    formData.append('excelFilePassword', password);  
+    formData.append('excelFile', file);
+  
+    console.log('userId:', userId);
+    console.log('clubId:', clubId);
+    console.log('accountId:', accountId);
+    console.log('password:', password);
+  
+    return securedAPI.post('/api/excel/budget', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    .then(response => {
+      console.log('업로드 성공:', response.data);
+      fetchTransactions(); // 리스트 갱신
+    })
+    .catch(error => {
+      console.error('엑셀 업로드 실패:', error);
+      throw error;
+    });
+  };
+  
   return (
     <Container>
       <TopSection>
-      <AddTransactionButton onClick={() => setIsCreateModalOpen(true)}>+ 거래 추가</AddTransactionButton>
+      <ButtonGroup>
+        <AddTransactionButton onClick={() => setIsCreateModalOpen(true)}>+ 거래 추가</AddTransactionButton>
+        <AddTransactionExcelButton onClick={()=>setIsExcelModalOpen(true)}>+ 엑셀로 거래 추가</AddTransactionExcelButton>
+      </ButtonGroup>
       <FilterContainer>
           <FilterButton active={filter === "전체"} onClick={() => setFilter("전체")}>전체</FilterButton>
           <FilterButton active={filter === "입금"} onClick={() => setFilter("입금")}>입금</FilterButton>
@@ -309,6 +369,12 @@ const TransactionTable = () => {
                 onClose={() => setIsCreateModalOpen(false)}
                 onCreate={handleCreateTransaction}
                 selectedAccount={selectedAccount} />
+            )}
+            {isExcelModalOpen && (
+              <ExcelUploadModal 
+                onClose={() => setIsExcelModalOpen(false)}
+                onSubmit={(file, birthDate) => handleExcelFileUpload(file, birthDate)}
+                />
             )}
 
         </>
