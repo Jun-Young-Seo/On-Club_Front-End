@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
-import phoneImage from '../assets/images/hand.png';
+import phoneImage from '../assets/images/aaaa.png';
+import { useNavigate } from 'react-router-dom';
 
 const SectionWrapper = styled.section`
   scroll-snap-align: start;
@@ -15,8 +16,8 @@ const SectionWrapper = styled.section`
 
 const TextBox = styled.div`
   color: #0F172A;
-  max-width: 540px;
-
+  // max-width: 540px;
+  margin-left : 10vw;
   h1 {
     font-size: 3.5rem;
     margin-bottom: 0.5rem;
@@ -64,6 +65,7 @@ const TextBox = styled.div`
 const PhoneImage = styled.img`
   height: 70vh;
   object-fit: contain;
+  margin-right : 15vw;
 `;
 const OutlinedPurpleButton = styled.button`
   padding: 0.6rem 1.4rem;
@@ -88,6 +90,7 @@ const OutlinedPurpleButton = styled.button`
 
 
 const SectionOne = ({ id }) => {
+  const navigate = useNavigate();
   return (
     <SectionWrapper id={id}>
       <TextBox>
@@ -98,7 +101,9 @@ const SectionOne = ({ id }) => {
           이제 엑셀 없이도 모든 운영을 한 번에 관리하세요.<br />
           On-Club과 함께라면, 당신의 클럽이 더 효율적으로 바뀝니다.
         </p>
-        <OutlinedPurpleButton>지금 시작하기</OutlinedPurpleButton>
+        <OutlinedPurpleButton onClick={() => navigate("/login")}>
+          지금 시작하기
+        </OutlinedPurpleButton>
 
       </TextBox>
       <PhoneImage src={phoneImage} alt="Phone" />
