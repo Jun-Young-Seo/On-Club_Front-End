@@ -28,7 +28,7 @@ securedAPI.interceptors.response.use(
     (response) => response,
     async (error) => {
       console.log("error : ",error);
-      if (error.response?.status === 401) { // Unauthorized
+      if (error.response?.status === 403) { // Unauthorized
         try {
           // sessionStorage에서 refresh 토큰을 가져옴 (refresh 토큰이 반드시 저장되어 있어야 함)
           const refreshToken = sessionStorage.getItem("refreshToken");
