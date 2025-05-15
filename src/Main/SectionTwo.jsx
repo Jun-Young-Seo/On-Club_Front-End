@@ -32,7 +32,7 @@ const Description = styled.p`
   font-size: 1rem;
   color: #475569;
   line-height: 1.6;
-  max-width: 700px;
+//   max-width: 700px;
   margin-bottom: 2rem;
 `;
 

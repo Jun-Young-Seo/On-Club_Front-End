@@ -3,6 +3,8 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import RegionModal from "./RegionModal";
 import signupBgImg from "../assets/images/signup_bg.jpg";
+import { unSecuredAPI } from "../Axios/UnsecuredAPI";
+import Swal from "sweetalert2";
 
 const PageContainer = styled.div`
   height: 100vh;
@@ -169,16 +171,81 @@ const Signup = () => {
   const [name, setName] = useState("");
   const [gender, setGender] = useState("");
   const [birthDate, setBirthDate] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [career, setCareer] = useState(0);
+  const [phone1, setPhone1] = useState("");
+  const [phone2, setPhone2] = useState("");
+  const [phone3, setPhone3] = useState("");
 
-  const handlePhoneInput = (e, nextRef) => {
-    if (e.target.value.length >= e.target.maxLength) {
+  const handlePhoneInput = (e, nextRef, setValue) => {
+    const value = e.target.value.replace(/[^0-9]/g, ""); // 숫자만 허용
+    setValue(value);
+    if (value.length >= e.target.maxLength) {
       nextRef?.current?.focus();
     }
   };
-
+  
   const handleLocationSelect = (sido, guGun) => {
     setSelectedLocation(`${sido} ${guGun}`);
   };
+
+  const handleSubmit = async () => {
+    const userTel = `${phone1}${phone2}${phone3}`;
+    
+    // === 유효성 검사 ===
+    if (!name.trim()) {
+      return Swal.fire('이름을 입력해주세요', '', 'warning');
+    }
+  
+    if (!gender) {
+      return Swal.fire('성별을 선택해주세요', '', 'warning');
+    }
+  
+    if (!birthDate) {
+      return Swal.fire('생년월일을 선택해주세요', '', 'warning');
+    }
+  
+    if (phone1.length !== 3 || phone2.length !== 4 || phone3.length !== 4) {
+      return Swal.fire('전화번호를 올바르게 입력해주세요', '', 'warning');
+    }
+  
+    if (!password || !confirmPassword) {
+      return Swal.fire('비밀번호를 입력해주세요', '', 'warning');
+    }
+  
+    if (password !== confirmPassword) {
+      return Swal.fire('비밀번호가 일치하지 않습니다', '', 'error');
+    }
+  
+    if (!selectedLocation) {
+      return Swal.fire('지역을 선택해주세요', '', 'warning');
+    }
+  
+    if (career === "" || isNaN(career) || Number(career) < 0) {
+      return Swal.fire('구력(년)을 올바르게 입력해주세요', '', 'warning');
+    }
+  
+    // === 서버 요청 ===
+    try {
+      const response = await unSecuredAPI.post("/api/user/join", {
+        userName: name,
+        userTel,
+        password,
+        region: selectedLocation,
+        gender: gender.toUpperCase(),
+        birthDate,
+        career: parseInt(career),
+      });
+  
+      await Swal.fire('회원가입이 완료되었습니다!', '', 'success');
+      navigate("/login");
+    } catch (error) {
+      console.error("회원가입 오류:", error);
+      Swal.fire('회원가입 중 오류가 발생했습니다.', '', 'error');
+    }
+  };
+  
 
   return (
     <PageContainer>
@@ -193,6 +260,7 @@ const Signup = () => {
 
           <InputField>
             <Select value={gender} onChange={(e) => setGender(e.target.value)} required>
+              <option value="">-- 성별 선택 --</option>
               <option value="male">남성</option>
               <option value="female">여성</option>
             </Select>
@@ -204,18 +272,41 @@ const Signup = () => {
 
           <InputField>
             <PhoneInputContainer>
-              <PhoneInput type="text" maxLength="3" placeholder="010" onInput={(e) => handlePhoneInput(e, phoneRef2)} />
-              <PhoneInput type="text" maxLength="4" placeholder="1234" ref={phoneRef2} onInput={(e) => handlePhoneInput(e, phoneRef3)} />
-              <PhoneInput type="text" maxLength="4" placeholder="5678" ref={phoneRef3} />
+              <PhoneInput
+              type="tel"
+              inputMode="numeric"
+              maxLength="3"
+              placeholder="010"
+              value={phone1}
+              onChange={(e) => handlePhoneInput(e, phoneRef2, setPhone1)}
+            />
+            <PhoneInput
+              type="tel"
+              inputMode="numeric"
+              maxLength="4"
+              placeholder="1234"
+              value={phone2}
+              ref={phoneRef2}
+              onChange={(e) => handlePhoneInput(e, phoneRef3, setPhone2)}
+            />
+            <PhoneInput
+              type="tel"
+              inputMode="numeric"
+              maxLength="4"
+              placeholder="5678"
+              value={phone3}
+              ref={phoneRef3}
+              onChange={(e) => setPhone3(e.target.value.replace(/[^0-9]/g, ""))}
+            />
             </PhoneInputContainer>
           </InputField>
 
           <InputField>
-            <Input type="password" placeholder="비밀번호" required />
+          <Input type="password" placeholder="비밀번호" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </InputField>
 
           <InputField>
-            <Input type="password" placeholder="비밀번호 확인" required />
+          <Input type="password" placeholder="비밀번호 확인" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
           </InputField>
 
           <InputField>
@@ -223,10 +314,10 @@ const Signup = () => {
           </InputField>
 
           <InputField>
-            <Input type="number" placeholder="구력 (년)" min="0" required />
+          <Input type="number" placeholder="구력 (년)" min="0" value={career} onChange={(e) => setCareer(e.target.value)} required />
           </InputField>
 
-          <RegisterButton>Sign Up</RegisterButton>
+          <RegisterButton onClick={handleSubmit}>가입하기</RegisterButton>
 
           <LoginText>
             이미 가입했나요? <LoginButton href="/login">로그인</LoginButton>

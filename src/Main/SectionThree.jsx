@@ -2,6 +2,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import phoneImage from '../assets/images/phone.png';
+import { useNavigate } from "react-router-dom";
 
 const SectionWrapper = styled.section`
   scroll-snap-align: start;
@@ -17,14 +18,14 @@ const SectionWrapper = styled.section`
 const PhoneImage = styled.img`
   height: 70vh;
   object-fit: contain;
-  margin-left : 10vw;
+  margin-left : 7vw;
 `;
 
 const TextBox = styled.div`
   color: #0F172A;
-  max-width: 500px;
+//   max-width: 500px;
   text-align: left;
-
+  margin-right : 10vw;
   h1 {
     font-size: 2.8rem;
     margin-bottom: 1rem;
@@ -83,6 +84,8 @@ const ActionButton = styled.button`
 `;
 
 const SectionThree = ({ id }) => {
+    const navigate = useNavigate();
+
   return (
     <SectionWrapper id={id}>
       <PhoneImage src={phoneImage} alt="Phone UI" />
@@ -93,7 +96,9 @@ const SectionThree = ({ id }) => {
             클럽에 가입하지 않아도 게스트로 참여할 수 있어요.<br></br>
             클럽에서 오는 다양한 알림도 받을 수 있습니다.
         </p>
-        <ActionButton>바로 가입하고 시작하기</ActionButton>
+        <ActionButton onClick={() => navigate("/signup")}>
+            바로 가입하고 시작하기
+        </ActionButton>
       </TextBox>
     </SectionWrapper>
   );

@@ -4,6 +4,7 @@ import { unSecuredAPI } from "./UnsecuredAPI";
 
 const securedAPI = axios.create({
     baseURL: 'https://api.on-club.co.kr',
+    // baseURL: "http://localhost:8080",
     headers: {
         'Content-Type': 'application/json',
     },

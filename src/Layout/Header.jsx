@@ -6,6 +6,8 @@ import { IoClose } from "react-icons/io5";
 import securedAPI from "../Axios/SecuredAPI";
 import { NotificationContext } from "../User/Notification/NotificationContext";
 import logo from "../assets/images/t.png";
+import logoFont from "../assets/images/logo.svg";
+import Swal from "sweetalert2";
 
 // ─── Styled Components ───
 const HeaderContainer = styled.header`
@@ -40,29 +42,45 @@ const LogoIcon = styled.div`
   background-size: cover;
   background-position: center;
   border-radius: 4px;
-  margin-right: 8px;
+  // margin-right: 8px;
 `;
-
 const NavLinks = styled.nav`
   display: flex;
   flex-grow: 0.9;
   justify-content: center;
-  gap: 3vw;
+  gap: 5vw;
 
   a {
+    position: relative;
     text-decoration: none;
     color: black;
     font-size: 16px;
+    font-weight: 600;
+    transition: color 0.3s ease;
 
     &:hover {
-      color: #3498db;
+      // color: #3B82F6;
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -4px;
+      width: 100%;
+      height: 2px;
+      background-color: #2563EB;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+
+    &:hover::after {
+      transform: scaleX(1);
     }
   }
-
-  @media (max-width: 768px) {
-    display: none;
-  }
 `;
+
 
 const AuthContainer = styled.div`
   display: flex;
@@ -73,17 +91,21 @@ const AuthContainer = styled.div`
 `;
 
 const AuthButton = styled.button`
-  background: ${(props) => (props.primary ? "transparent" : "#3498db")};
+  background: ${(props) => (props.primary ? "transparent" : "#7C3AED")};
   color: ${(props) => (props.primary ? "black" : "white")};
-  border: ${(props) => (props.primary ? "none" : "2px solid #3498db")};
-  padding: 0.8vh 2vw;
-  border-radius: 20px;
-  font-size: 18px;
+  border: 3px solid #7C3AED;
+  padding: 0.6rem 1.5rem;
+  border-radius: 9999px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
+  transition: all 0.25s ease;
 
   &:hover {
-    background: ${(props) => (props.primary ? "#f2f2f2" : "#2980b9")};
+    background: ${(props) => (props.primary ? "#f5f3ff" : "#9F67FF")};
+    color: ${(props) => (props.primary ? "#6B21A8" : "white")};
+    border-color: #9F67FF;
   }
 `;
 
@@ -210,6 +232,39 @@ const EmojiIcon = styled.span`
   font-size: 1.7rem;
 `;
 
+const LogoFont = styled.img`
+  height: 22px;
+  margin-left: 8px;
+  object-fit: contain;
+  vertical-align: middle;
+`;
+
+const StyledNavLink = styled.span`
+  position: relative;
+  text-decoration: none;
+  color: black;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover::after {
+    transform: scaleX(1);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 100%;
+    height: 2px;
+    background-color: #2563EB;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+`;
+
 // ─── Component ───
 const Header = () => {
   const { unreadNotifications, fetchNotifications, loading } = useContext(NotificationContext);
@@ -217,6 +272,7 @@ const Header = () => {
   const userId = sessionStorage.getItem("userId");
   const [showNoti, setShowNoti] = useState(false);
   const dropdownRef = useRef(null);
+  
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -265,15 +321,33 @@ const Header = () => {
     <HeaderContainer>
       <LogoContainer onClick={() => navigate("/")}>
         <LogoIcon />
-        <strong>On-Club</strong>
-      </LogoContainer>
+        <LogoFont src={logoFont}/>
+        </LogoContainer>
+        {/* <ImageNavButton onClick={() => navigate("/")}>
+  <img src={featuresImg} alt="Features" />
+</ImageNavButton> */}
 
       <NavLinks>
-        <Link to="/new/club">클럽 만들기</Link>
-        <Link to="/">Features</Link>
-        <Link to="/pricing">Pricing</Link>
-        <Link to="/gallery">Gallery</Link>
-        <Link to="/team">Team</Link>
+        <Link to="/">기능 둘러보기</Link>
+        <StyledNavLink
+  onClick={() => {
+    if (!userId) {
+      Swal.fire({
+        icon: 'warning',
+        title: '로그인이 필요합니다',
+        text: '클럽 만들기는 로그인한 사용자만 이용할 수 있습니다.',
+        confirmButtonText: '확인'
+      });
+    } else {
+      navigate("/new/club");
+    }
+  }}
+>
+  클럽 만들기
+</StyledNavLink>
+        <Link to="/clubs">클럽 찾기</Link>
+        {/* <Link to="/gallery">Gallery</Link>
+        <Link to="/team">Team</Link> */}
       </NavLinks>
 
       <AuthContainer>
@@ -322,8 +396,8 @@ const Header = () => {
           }}>로그아웃</AuthButton>
         ) : (
           <>
-            <AuthButton primary onClick={() => navigate("/login")}>Sign In</AuthButton>
-            <AuthButton onClick={() => navigate("/signup")}>Register</AuthButton>
+            <AuthButton primary onClick={() => navigate("/login")}>로그인</AuthButton>
+            <AuthButton onClick={() => navigate("/signup")}>회원가입</AuthButton>
           </>
         )}
       </AuthContainer>
