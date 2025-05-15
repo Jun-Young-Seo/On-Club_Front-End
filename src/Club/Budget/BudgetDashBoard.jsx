@@ -236,7 +236,17 @@ const Dashboard = () => {
         console.log(response);
         setBudgetInfo(response.data);
         console.log("✅ 대시보드 데이터:", response.data);
-
+      }
+        catch (error) {
+          if (error.response && error.response.status === 404) {
+            console.warn("✅ 메인 계좌가 설정되지 않았습니다. 설정 페이지로 이동합니다.");
+            navigate(`/clubs/${clubId}/account/setup`);
+          } 
+          else {
+            console.error("❌ 예산 정보 요청 실패:", error);
+          }
+        }
+        try{
         const txResponse = await securedAPI.get(`/api/budget/get/latest-three?clubId=${clubId}`);
         setTransactions(txResponse.data);
         console.log("✅ 최근 거래 데이터:", txResponse.data);

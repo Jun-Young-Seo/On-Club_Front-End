@@ -123,8 +123,8 @@ const BellIcon = styled(FiBell)`
 
 const Badge = styled.div`
   position: absolute;
-  top: -7px;
-  right: -13px;
+  top: -0.01vh;
+  right: -0.7vw;
   background: red;
   color: white;
   font-size: 12px;
@@ -137,7 +137,7 @@ const NotificationDropdown = styled.div`
   position: absolute;
   top: 35px;
   right: 0;
-  width: 280px;
+  width: 30vw;
   background: white;
   border: 1px solid #ddd;
   border-radius: 10px;
@@ -330,21 +330,21 @@ const Header = () => {
       <NavLinks>
         <Link to="/">기능 둘러보기</Link>
         <StyledNavLink
-  onClick={() => {
-    if (!userId) {
-      Swal.fire({
-        icon: 'warning',
-        title: '로그인이 필요합니다',
-        text: '클럽 만들기는 로그인한 사용자만 이용할 수 있습니다.',
-        confirmButtonText: '확인'
-      });
-    } else {
-      navigate("/new/club");
-    }
-  }}
->
-  클럽 만들기
-</StyledNavLink>
+          onClick={() => {
+            if (!userId) {
+              Swal.fire({
+                icon: 'warning',
+                title: '로그인이 필요합니다',
+                text: '클럽 만들기는 로그인한 사용자만 이용할 수 있습니다.',
+                confirmButtonText: '확인'
+              });
+            } else {
+              navigate("/new/club");
+            }
+          }}
+        >
+          클럽 만들기
+      </StyledNavLink>
         <Link to="/clubs">클럽 찾기</Link>
         {/* <Link to="/gallery">Gallery</Link>
         <Link to="/team">Team</Link> */}
