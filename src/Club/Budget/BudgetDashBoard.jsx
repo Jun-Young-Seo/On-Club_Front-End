@@ -7,11 +7,13 @@ import styled from 'styled-components';
 import IncomeChart from './Chart/IncomeChart';
 import ExpenseChart from './Chart/ExpenseChart';
 import MonthlyChart from './Chart/MonthlyChart';
+import Swal from 'sweetalert2';
 
 import { useEffect,useState } from 'react';
 import securedAPI from '../../Axios/SecuredAPI';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import ModifyClubMainAccountModal from './ModifyClubAccountModal';
 
 const kakaoBankLogoSvg = "https://upload.wikimedia.org/wikipedia/commons/4/48/KakaoBank_logo.svg";
 
@@ -229,6 +231,9 @@ const Dashboard = () => {
   });
   const [transactions, setTransactions] = useState([]);
   const [account, setAccount] = useState([]);
+  const [showAccountModal, setShowAccountModal] = useState(false);
+
+
   useEffect(() => {
     const fetchBudgetInfo = async () => {
       try {
@@ -239,8 +244,13 @@ const Dashboard = () => {
       }
         catch (error) {
           if (error.response && error.response.status === 404) {
-            console.warn("✅ 메인 계좌가 설정되지 않았습니다. 설정 페이지로 이동합니다.");
-            navigate(`/clubs/${clubId}/account/setup`);
+            await Swal.fire({
+              icon: 'error',
+              title: '주 거래 계좌가 없습니다',
+              text: '먼저 주 거래 계좌를 설정해주세요.',
+              confirmButtonText: '계좌 설정하러 가기',
+            });
+            navigate(`/clubs/${clubId}/account_setup`);        
           } 
           else {
             console.error("❌ 예산 정보 요청 실패:", error);
@@ -347,16 +357,23 @@ const Dashboard = () => {
   </div>
 
   <div style={{ flex: 1.0 }}>
-    <SectionTitle>통장</SectionTitle>
-    <AccountCard>
+    <SectionTitle>주 거래 계좌</SectionTitle>
+    <AccountCard onClick={() => setShowAccountModal(true)}>
       <BankLogo src={kakaoBankLogoSvg} alt="KakaoBank Logo" />
       <div>
         <BankName>{account.bankName}</BankName>
+        <BankName>{account.accountName}</BankName>
         <AccountName>{account.accountOwner}</AccountName>
-        <AccountName>{account.accountName}</AccountName>
       </div>
       <CardNumber>{account.accountNumber}</CardNumber>
     </AccountCard>
+        {showAccountModal && (
+      <ModifyClubMainAccountModal
+        clubId={clubId}
+        onClose={() => setShowAccountModal(false)}
+      />
+    )}
+
   </div>
 </Section>
 <Gap/>

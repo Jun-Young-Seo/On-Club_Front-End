@@ -1,10 +1,10 @@
 import axios from "axios";
 import { unSecuredAPI } from "./UnsecuredAPI";
-// import apiClient from "./apiClient";  // Refresh Token 요청을 위한 기본 API 클라이언트
+import Swal from "sweetalert2";
 
 const securedAPI = axios.create({
-    baseURL: 'https://api.on-club.co.kr',
-    // baseURL: "http://localhost:8080",
+    // baseURL: 'https://api.on-club.co.kr',
+    baseURL: "http://localhost:8080",
     headers: {
         'Content-Type': 'application/json',
     },
@@ -23,44 +23,66 @@ securedAPI.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Response InterCeptor -> Access Token 만료 시 자동 갱신
+// Response Interceptor 개선
 securedAPI.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-      console.log("error : ",error);
-      if (error.response?.status === 403) { // Unauthorized
-        try {
-          // sessionStorage에서 refresh 토큰을 가져옴 (refresh 토큰이 반드시 저장되어 있어야 함)
-          const refreshToken = sessionStorage.getItem("refreshToken");
-          if (!refreshToken) {
-            return Promise.reject(error);
-          }
-          // refresh 토큰을 Authorization 헤더에 포함하여 새로운 Access Token 요청
-          const refreshResponse = await unSecuredAPI.post(
-            '/api/user/refresh',
-            null, // body가 없으면 null
-            {
-              headers: {
-                'Authorization': `Bearer ${refreshToken}`
-              }
-            }
-          );
-  
-          const newAccessToken = refreshResponse.data.accessToken;
-          console.log('new access token:', newAccessToken);
-          sessionStorage.setItem('accessToken', newAccessToken);
-          // axios 인스턴스의 기본 헤더와 재시도 요청의 헤더 모두 업데이트
-          securedAPI.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
-          error.config.headers['Authorization'] = `Bearer ${newAccessToken}`;   
-          
-          return securedAPI.request(error.config);
-        } catch (refreshError) {
-          console.error('토큰 갱신 실패:', refreshError);
-          return Promise.reject(refreshError);
-        }
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    // 이미 재시도 했던 요청이면 루프 방지
+    if (error.response?.status === 403 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      const refreshToken = sessionStorage.getItem("refreshToken");
+
+      if (!refreshToken) {
+        Swal.fire({
+          icon: "warning",
+          title: "로그인 정보가 만료되었습니다",
+          text: "다시 로그인해주세요.",
+          confirmButtonText: "확인"
+        }).then(() => {
+          sessionStorage.clear();
+          window.location.href = "/login";
+        });
+        return Promise.reject(error);
       }
-      return Promise.reject(error);
+
+      try {
+        const refreshResponse = await unSecuredAPI.post(
+          '/api/user/refresh',
+          null,
+          {
+            headers: {
+              'Authorization': `Bearer ${refreshToken}`
+            }
+          }
+        );
+
+        const newAccessToken = refreshResponse.data.accessToken;
+        sessionStorage.setItem('accessToken', newAccessToken);
+
+        // 새로운 토큰으로 요청 다시 시도
+        originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+        return securedAPI(originalRequest);
+      } catch (refreshError) {
+        Swal.fire({
+          icon: "warning",
+          title: "로그인 정보가 만료되었습니다",
+          text: "다시 로그인해주세요.",
+          confirmButtonText: "확인"
+        }).then(() => {
+          sessionStorage.clear();
+          window.location.href = "/login";
+        });
+
+        return Promise.reject(refreshError);
+      }
     }
-  );
-  
+
+    // 그 외의 에러는 그대로 반환
+    return Promise.reject(error);
+  }
+);
+
 export default securedAPI;

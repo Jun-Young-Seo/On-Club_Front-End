@@ -24,6 +24,7 @@ import NewClubStepTwo from"./Club/NewClub/NewClubStepTwo";
 import NewClubStepThree from "./Club/NewClub/NewClubStepThree";
 import LandingPage from "./Main/LandingPage";
 
+import AccountSetupPage from "./Club/Budget/AccountSetupPage";
 
 const App = () => {
   return (
@@ -51,6 +52,7 @@ const App = () => {
         {/* 클럽 상세 페이지 이하 모든 경로에는 Layout 적용 (→ 사이드바 포함됨) */}
         <Route path="/clubs/:clubId/*" element={<Layout />}>
           <Route index element={<ClubDetailPage />} />
+          <Route path="account_setup" element={ <AccountSetupPage/>} />
           <Route path="budget_dashboard" element={<BudgetDashBoard />} />
           <Route path="calendar" element={<ClubCalendarPage />} />
           <Route path="budget_detail" element={<TransactionTable />} />
