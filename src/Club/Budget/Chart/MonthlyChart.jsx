@@ -33,7 +33,7 @@ const MonthlyChart = ({ monthlyData }) => {
   const options = {
     responsive: true,
     animation: {
-      duration: 2000, // 2초로 느리게
+      duration: 2000,
       easing: 'easeOutQuart',
     },
     plugins: {
