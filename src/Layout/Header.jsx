@@ -138,6 +138,8 @@ const NotificationDropdown = styled.div`
   top: 35px;
   right: 0;
   width: 30vw;
+  max-height : 30vh;
+  overflow-y : auto;
   background: white;
   border: 1px solid #ddd;
   border-radius: 10px;

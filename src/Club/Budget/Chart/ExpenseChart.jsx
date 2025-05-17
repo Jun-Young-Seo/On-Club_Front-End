@@ -1,8 +1,23 @@
 import React from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import styled from 'styled-components';
+import { FiInbox } from 'react-icons/fi'; // feather icon 예시
 
 ChartJS.register(ArcElement, Tooltip, Legend);
+const NoDataBox = styled.div`
+  width: 100%;
+  height: 250px;
+  background: #f9fafb;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #9ca3af;
+  font-size: 0.95rem;
+`;
 
 const ExpenseChart = ({ expenseData }) => {
   const labels = expenseData.map(item => item.transactionDetail);
@@ -58,8 +73,10 @@ const ExpenseChart = ({ expenseData }) => {
       {expenseData.length > 0 ? (
         <Doughnut data={chartData} options={chartOptions} />
       ) : (
-        <p>데이터 없음</p>
-      )}
+        <NoDataBox>
+        <FiInbox size={40} style={{ marginBottom: '0.5rem' }} />
+        아직 거래 내역이 없어요.
+      </NoDataBox>      )}
     </div>
   );
 };
