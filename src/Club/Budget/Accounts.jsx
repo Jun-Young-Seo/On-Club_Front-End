@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import securedAPI from "../../Axios/SecuredAPI";
+import { useParams } from "react-router-dom";
 
 const kakaoBankLogoSvg = "https://upload.wikimedia.org/wikipedia/commons/4/48/KakaoBank_logo.svg";
 
@@ -57,23 +58,19 @@ const CardNumber = styled.div`
   font-weight: bold;
 `;
 
-const ExpiryDate = styled.div`
-  font-size: 14px;
-  opacity: 0.8;
-`;
 
 const Accounts = ({ onSelectAccount }) => {
   const [accounts, setAccounts] = useState([]);
   const [selectedAccount, setSelectedAccount] = useState(null);
-
+  const {clubId} = useParams();
   useEffect(() => {
     fetchAccounts();
-  }, []);
+    console.log('clubId: ',clubId);
+  },[]);
 
-  // ✅ 계좌 목록 가져오기
   const fetchAccounts = async () => {
     try {
-      const response = await securedAPI.get("/api/account/get-all_accounts?clubId=1");
+      const response = await securedAPI.get(`/api/account/get-all_accounts?clubId=${clubId}`);
       console.log(response);
       setAccounts(response.data);
     } catch (error) {
@@ -84,7 +81,7 @@ const Accounts = ({ onSelectAccount }) => {
   const handleSelectAccount = (accountId) => {
     setSelectedAccount(accountId);
     console.log(`✅ 선택한 계좌: ${accountId}`);
-    onSelectAccount(accountId); // 부모 컴포넌트로 선택한 계좌 전달
+    onSelectAccount(accountId);
   };
 
   return (
