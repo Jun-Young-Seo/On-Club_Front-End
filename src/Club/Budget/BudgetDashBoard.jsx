@@ -293,7 +293,7 @@ const Dashboard = () => {
                 <img src={balanceIcon} alt="잔액 아이콘" />
             <div>
                 <CardTitle>잔액</CardTitle>
-                <CardValue>{budgetInfo.balance}원</CardValue>
+                <CardValue>{budgetInfo.balance.toLocaleString('ko-KR')}원</CardValue>
             </div>
             </CardHeader>
         </Card>
@@ -303,7 +303,7 @@ const Dashboard = () => {
                 <img src={expenseIcon} alt="지출 아이콘" />
             <div>
                 <CardTitle>지출</CardTitle>
-                <CardValue>{budgetInfo.monthlyExpense}원</CardValue>
+                <CardValue>{budgetInfo.monthlyExpense.toLocaleString('ko-KR')}원</CardValue>
             </div>
             </CardHeader>
         </Card>
@@ -313,7 +313,7 @@ const Dashboard = () => {
                 <img src={incomeIcon} alt="수입 아이콘" />
             <div>
                 <CardTitle>수입</CardTitle>
-                <CardValue>{budgetInfo.monthlyIncome}원</CardValue>
+                <CardValue>{budgetInfo.monthlyIncome.toLocaleString('ko-KR')}원</CardValue>
             </div>
             </CardHeader>
         </Card>
@@ -323,7 +323,7 @@ const Dashboard = () => {
                 <img src={savingIcon} alt="수입 아이콘" />
             <div>
                 <CardTitle>이월금</CardTitle>
-                <CardValue>{budgetInfo.monthlySurplus}원</CardValue>
+                <CardValue>{budgetInfo.monthlySurplus.toLocaleString('ko-KR')}원</CardValue>
             </div>
             </CardHeader>
         </Card>
