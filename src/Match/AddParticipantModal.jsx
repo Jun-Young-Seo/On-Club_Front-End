@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import securedAPI from '../Axios/SecuredAPI';
+import Swal from 'sweetalert2';
 
 const ModalBackdrop = styled.div`
   position: fixed;
@@ -92,6 +93,7 @@ const RoleBadge = styled.div`
       case 'MANAGER': return '#ffa94d';
       case 'REGULAR': return '#5fbd7b';
       case 'INACTIVE': return '#ccc';
+      case 'GUEST': return '#999';
       default: return '#999';
     }
   }};
@@ -114,53 +116,106 @@ const ActionWrapper = styled.div`
   justify-content: center;
   margin-top: 2rem;
 `;
+
 const Icon = styled.span`
   margin-right: 0.55rem;
 `;
 
 const AddParticipantModal = ({ clubId, eventId, onClose, onSuccess }) => {
   const [users, setUsers] = useState([]);
+  const [guests, setGuests] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
 
-  useEffect(() => {
-    const fetchClubUsers = async () => {
-      try {
-        const response = await securedAPI.get(`/api/membership/all-members?clubId=${clubId}`);
-        setUsers(response.data);
-      } catch (error) {
-        console.error('회원 목록 가져오기 실패:', error);
-      }
-    };
-    fetchClubUsers();
-  }, [clubId]);
+useEffect(() => {
+  const fetchClubUsers = async () => {
+    try {
+      const response = await securedAPI.get(`/api/membership/all-members?clubId=${clubId}`);
+      const membersWithType = response.data.map(user => ({ ...user, type: 'MEMBER' }));
+      setUsers(membersWithType);
+    } catch (error) {
+      console.error('회원 목록 가져오기 실패:', error);
+    }
+  };
 
-  const toggleSelect = (membershipId) => {
+  const fetchGuests = async () => {
+    try {
+      const response = await securedAPI.get(`/api/participant/all/guests?eventId=${eventId}`);
+      const guestsWithType = response.data.map(user => ({ ...user, type: 'GUEST', role: 'GUEST' }));
+      setGuests(guestsWithType); 
+    } catch (error) {
+      console.error('게스트 목록 가져오기 실패:', error);
+    }
+  };
+
+  fetchClubUsers();
+  fetchGuests();
+  
+}, [clubId, eventId]);
+
+
+  const allParticipants = [...users, ...guests];
+
+  const toggleSelect = (userId) => {
     setSelectedIds(prev =>
-      prev.includes(membershipId)
-        ? prev.filter(id => id !== membershipId)
-        : [...prev, membershipId]
+      prev.includes(userId)
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
     );
   };
 
   const handleSubmit = async () => {
     if (selectedIds.length === 0) {
-      alert("선택된 유저가 없습니다.");
+      await Swal.fire({
+        icon: 'warning',
+        title: '선택된 유저 없음',
+        text: '참가시킬 유저를 선택해주세요.',
+      });
       return;
     }
 
-    try {
-      await Promise.all(
-        selectedIds.map(id =>
-          securedAPI.post(`/api/participant/add?eventId=${eventId}&membershipId=${id}`)
-        )
-      );
-      alert(`✅ ${selectedIds.length}명 추가 완료`);
+    const successList = [];
+    const alreadyJoinedList = [];
+    const failedList = [];
+
+    for (const userId of selectedIds) {
+      try {
+        await securedAPI.post(`/api/participant/join?userId=${userId}&eventId=${eventId}`);
+        successList.push(userId);
+      } catch (error) {
+        if (error.response?.status === 409) {
+          alreadyJoinedList.push(userId);
+        } else {
+          failedList.push(userId);
+        }
+      }
+    }
+
+    if (successList.length > 0) {
+      await Swal.fire({
+        icon: 'success',
+        title: '참가 완료',
+        text: `${successList.length}명의 참가가 완료되었습니다.`,
+      });
       onSuccess();
-    } catch (error) {
-      console.error("참가자 추가 실패:", error);
-      alert("❌ 참가자 추가 실패");
+    }
+
+    if (alreadyJoinedList.length > 0) {
+      await Swal.fire({
+        icon: 'info',
+        title: '중복 참가자 있음',
+        text: `이미 참가 중인 유저가 ${alreadyJoinedList.length}명 포함되어 있습니다.`,
+      });
+    }
+
+    if (failedList.length > 0) {
+      await Swal.fire({
+        icon: 'error',
+        title: '일부 실패',
+        text: `${failedList.length}명의 참가자 추가에 실패했습니다.`,
+      });
     }
   };
+// console.log('allParticipants:', allParticipants);
 
   return (
     <ModalBackdrop onClick={onClose}>
@@ -168,38 +223,31 @@ const AddParticipantModal = ({ clubId, eventId, onClose, onSuccess }) => {
         <CloseButton onClick={onClose}>×</CloseButton>
         <Title>회원 선택</Title>
         <UserGrid>
-          {users.map(user => (
+          {allParticipants.map(user => (
             <UserCard
-              key={user.membershipId}
-              onClick={() => toggleSelect(user.membershipId)}
-              $selected={selectedIds.includes(user.membershipId)}
+              key={`${user.type}-${user.userId}`}
+              onClick={() => toggleSelect(user.userId)}
+              $selected={selectedIds.includes(user.userId)}
             >
               <UserNameWrapper>
                 <UserName>{user.userName}</UserName>
-                <RoleBadge $role={user.role}>
-                  {user.role === 'LEADER' && '리더'}
-                  {user.role === 'MANAGER' && '운영진'}
-                  {user.role === 'REGULAR' && '정회원'}
-                  {user.role === 'INACTIVE' && '휴회원'}
+                <RoleBadge $role={user.role ?? 'GUEST'}>
+                  {{
+                    LEADER: '리더',
+                    MANAGER: '운영진',
+                    REGULAR: '정회원',
+                    INACTIVE: '휴회원',
+                    GUEST: '게스트'
+                  }[user.role ?? 'GUEST']}
                 </RoleBadge>
               </UserNameWrapper>
+              <UserDetail><Icon>📞</Icon>{user.userTel}</UserDetail>
+              <UserDetail><Icon>🎂</Icon>{user.birthDate}</UserDetail>
+              <UserDetail><Icon>📍</Icon>{user.region}</UserDetail>
               <UserDetail>
-                  <Icon>📞</Icon>
-                    {user.userTel}
-                </UserDetail>
-              <UserDetail>
-              <Icon>🎂</Icon>
-                  {user.birthDate}
-                </UserDetail>
-              <UserDetail>
-                <Icon>📍</Icon> 
-                 {user.region}
-                 </UserDetail>
-              <UserDetail>
-                <Icon>🧬</Icon> 
-                 {user.gender === 'FEMALE' ? '여자' : '남자'} / {user.career}년차
-                 </UserDetail>
-              <UserDetail>📈 출석률 {user.attendanceRate}%</UserDetail>
+                <Icon>🧬</Icon>{user.gender === 'FEMALE' ? '여자' : '남자'} / {user.career}년차
+              </UserDetail>
+              <UserDetail>📈 출석률 {user.attendanceRate ?? '-'}</UserDetail>
             </UserCard>
           ))}
         </UserGrid>
