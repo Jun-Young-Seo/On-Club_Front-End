@@ -147,7 +147,7 @@ const Index = styled.div`
 const NewClubStepThree = () => {
   const logoInputRef = useRef(null);
   const bgInputRef = useRef(null);
-
+  const userId = sessionStorage.getItem('userId');
   const [logoPreview, setLogoPreview] = useState(null);
   const [bgPreview, setBgPreview] = useState(null);
 
@@ -177,6 +177,7 @@ const NewClubStepThree = () => {
       }
   
       const response = await securedAPI.post('/api/club/add', {
+        userId,
         clubName,
         clubDescription,
         clubLogoURL: "",
