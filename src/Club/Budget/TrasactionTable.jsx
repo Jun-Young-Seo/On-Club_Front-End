@@ -7,6 +7,7 @@ import securedAPI from "../../Axios/SecuredAPI";
 import TransactionCreateModal from "./TrasnactionCreateModal";
 import Accounts from "./Accounts";
 import ExcelUploadModal from "./ExcelUploadModal";
+import Swal from "sweetalert2";
 
 const Container = styled.div`
   width: 90%;
@@ -110,9 +111,12 @@ const TableHeader = styled.th`
 const TableCell = styled.td`
   padding: 16px;
   border-bottom: 1px solid #eee;
-  font-size: 14px;
-  color: #333;
+  // font-size: 14px;
+  font-size : ${({$isUnknown}) => ($isUnknown ? '22px' : '14px')};
+  color: ${({ $isUnknown }) => ($isUnknown ? '#d9534f' : '#333')};
+  font-weight: ${({ $isUnknown }) => ($isUnknown ? 'bold' : 'normal')};
 `;
+
 
 const Amount = styled.span`
   font-weight: bold;
@@ -187,20 +191,32 @@ const TransactionTable = () => {
 
   const {clubId} = useParams();
 
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      if (!selectedAccount) return;
-      try {
-        const response = await securedAPI.get(`/api/budget/get-all/account_id?accountId=${selectedAccount}`);
-        console.log("🚀 [Transaction Data Loaded]", response.data);
-        setTransactions(response.data || []);
-      } catch (error) {
-        console.error("❌ 거래 내역을 불러오는데 실패했습니다.", error);
+useEffect(() => {
+  const fetchTransactions = async () => {
+    if (!selectedAccount) return;
+    try {
+      const response = await securedAPI.get(`/api/budget/get-all/account_id?accountId=${selectedAccount}`);
+      const fetched = response.data || [];
+      setTransactions(fetched);
+
+      const hasUnknown = fetched.some(tx => tx.transactionDetail === "?");
+      if (hasUnknown) {
+        Swal.fire({
+          icon: "warning",
+          title: "AI 거래분류가 ? 인 거래가 있습니다",
+          text: "?인 거래는 AI 예산관리 보고서 작성에서 제외됩니다.",
+          confirmButtonText: "확인"
+        });
       }
-    };
-  
-    fetchTransactions();
-  }, [selectedAccount]);
+
+    } catch (error) {
+      console.error("❌ 거래 내역을 불러오는데 실패했습니다.", error);
+    }
+  };
+
+  fetchTransactions();
+}, [selectedAccount]);
+
 
   const onEditTransaction = (transaction) => {
     setSelectedTransaction(transaction);
@@ -334,7 +350,9 @@ const TransactionTable = () => {
                       </TableCell>
                       <TableCell>{transaction.transactionBalance.toLocaleString()} 원</TableCell>
                       <TableCell>{transaction.transactionCategory}</TableCell>
-                      <TableCell>{transaction.transactionDetail}</TableCell>
+                      <TableCell $isUnknown={transaction.transactionDetail === "?"}>
+                        {transaction.transactionDetail}
+                      </TableCell>
                       <TableCell>{transaction.transactionDescription}</TableCell>
                       <TableCell>{transaction.transactionMemo}</TableCell>
                       <TableCell>
