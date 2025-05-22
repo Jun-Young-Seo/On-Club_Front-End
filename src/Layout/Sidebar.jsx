@@ -118,20 +118,20 @@ const Sidebar = () => {
           모임관리
         </MenuItem>
         
-        <MenuItem active={activeItem === "storage"} onClick={() => setActiveItem("storage")}>
+        {/* <MenuItem active={activeItem === "storage"} onClick={() => setActiveItem("storage")}>
           <TiCloudStorageOutline size="1.5vw" />
           파일 저장소
-        </MenuItem>
+        </MenuItem> */}
 
         <MenuItem active={activeItem === "report"} onClick={() => handleNavigation("report",`/clubs/${clubId}/report/budget`,["MANAGER","LEADER"])}>
           <TbReport size="1.5vw" />
           보고서 보기
         </MenuItem>
 
-        <MenuItem active={activeItem === "conference"} onClick={() => setActiveItem("conference")}>
+        {/* <MenuItem active={activeItem === "conference"} onClick={() => setActiveItem("conference")}>
           <MdOutlineRecordVoiceOver size="1.5vw" />
           회의 요약하기
-        </MenuItem>
+        </MenuItem> */}
       </Menu>
     </SidebarContainer>
   );

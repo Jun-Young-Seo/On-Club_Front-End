@@ -3,8 +3,8 @@ import { unSecuredAPI } from "./UnsecuredAPI";
 import Swal from "sweetalert2";
 
 const securedAPI = axios.create({
-    baseURL: 'https://api.on-club.co.kr',
-    // baseURL: "http://localhost:8080",
+    // baseURL: 'https://api.on-club.co.kr',
+    baseURL: "http://localhost:8080",
     headers: {
         'Content-Type': 'application/json',
     },
