@@ -196,12 +196,13 @@ useEffect(() => {
     const today = new Date();
     const month = today.getMonth() + 1;
     const year = today.getFullYear();
-    setYearMonthText(`${year}년 ${month}월 예산에 관한 보고서입니다!`);
+    setYearMonthText(`${year}년 ${month}월 보고서입니다!`);
 
     try {
       const budgetPromise = securedAPI.get(`/api/report/budget/data?clubId=${clubId}&month=${month}`);
       const gptPromise = securedAPI.get(`/api/report/budget/analyze?clubId=${clubId}&month=${month}`);
-
+        
+      console.log(clubId);
       const [budgetRes, gptRes] = await Promise.all([budgetPromise, gptPromise]);
 
       const { totalIncome, totalExpense, categorySummaries } = budgetRes.data;
@@ -303,7 +304,10 @@ return (
         <>
           <Grid>
             <CardWrapper>
-                <ChartTitle>📊 수입과 지출</ChartTitle>
+                <ChartTitle>
+                    <ChartEmoji>📊</ChartEmoji>
+                     수입과 지출
+                     </ChartTitle>
                 <Card>
                     <Bar data={getBarChartData()} options={{ responsive: true, maintainAspectRatio: false }} />
                 </Card>

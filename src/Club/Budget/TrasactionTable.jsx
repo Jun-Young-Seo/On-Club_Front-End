@@ -193,6 +193,7 @@ const TransactionTable = () => {
 
 useEffect(() => {
   const fetchTransactions = async () => {
+    console.log(selectedAccount);
     if (!selectedAccount) return;
     try {
       const response = await securedAPI.get(`/api/budget/get-all/account_id?accountId=${selectedAccount}`);
@@ -263,11 +264,11 @@ useEffect(() => {
     const userId = sessionStorage.getItem('userId');
     const accountId = selectedAccount;
   
-    // 검증
     if (!userId || !accountId || !clubId || !file || !password) {
       console.error('필수 데이터 누락:', { userId, accountId, clubId, file, password });
       return Promise.reject('필수 데이터 누락');
     }
+    console.log('account Id : ',accountId);
     console.log(file);
     const formData = new FormData();
     formData.append('userId', userId);
