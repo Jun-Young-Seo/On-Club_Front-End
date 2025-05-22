@@ -25,6 +25,7 @@ import NewClubStepThree from "./Club/NewClub/NewClubStepThree";
 import LandingPage from "./Main/LandingPage";
 
 import AccountSetupPage from "./Club/Budget/AccountSetupPage";
+import BudgetReportPage from "./Club/Report/BudgetReportPage";
 
 const App = () => {
   return (
@@ -59,6 +60,7 @@ const App = () => {
           <Route path="event" element={<MatchDashBoard />} />
           <Route path="event/:eventId" element={<Match />} />
           <Route path="membership_detail" element={<MembershipTable />} />
+          <Route path="report/budget" element={<BudgetReportPage/>}/>
         </Route>
       </Routes>
     </NotificationProvider>
