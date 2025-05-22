@@ -123,7 +123,7 @@ const Sidebar = () => {
           파일 저장소
         </MenuItem>
 
-        <MenuItem active={activeItem === "report"} onClick={() => setActiveItem("report")}>
+        <MenuItem active={activeItem === "report"} onClick={() => handleNavigation("report",`/clubs/${clubId}/report/budget`,["MANAGER","LEADER"])}>
           <TbReport size="1.5vw" />
           보고서 보기
         </MenuItem>
