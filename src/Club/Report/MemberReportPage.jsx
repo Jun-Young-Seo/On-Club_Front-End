@@ -93,7 +93,7 @@ const MarkdownBox = styled.div`
   color: #374151;
 `;
 
-const MemberReportPage = () => {
+const MemberReportPage = ({activeTab}) => {
   const { clubId } = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [gptMarkDown, setGptMarkDown] = useState("");
@@ -119,34 +119,37 @@ const MemberReportPage = () => {
     };
   }, []);
 
-  useEffect(() => {
-    const fetchClubReports = async () => {
-      setIsLoading(true);
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = today.getMonth() + 1;
-      try {
-        const [memberRes, gptRes] = await Promise.all([
-          securedAPI.get(`/api/report/member/data?clubId=${clubId}&year=${year}&month=${month}`),
-          securedAPI.get(`/api/report/member/analyze?clubId=${clubId}&year=${year}&month=${month}`)
-        ]);
-        const data = memberRes.data;
-        setHowManyMembers(data.howManyMembers);
-        setHowManyMembersBetweenOneMonth(data.howManyMembersBetweenOneMonth);
-        setHowManyAccumulatedGuests(data.howManyAccumulatedGuests);
-        setHowManyGuestsBetweenOneMonth(data.howManyGuestsBetweenOneMonth);
-        setHowManyEventsBetweenOneMonth(data.howManyEventsBetweenOneMonth);
-        setMaleMembers(data.maleMembers);
-        setFemaleMembers(data.femaleMembers);
-        setGptMarkDown(gptRes.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchClubReports();
-  }, [clubId]);
+useEffect(() => {
+  if (activeTab !== 'member') return;
+
+  const fetchClubReports = async () => {
+    setIsLoading(true);
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+    try {
+      const [memberRes, gptRes] = await Promise.all([
+        securedAPI.get(`/api/report/member/data?clubId=${clubId}&year=${year}&month=${month}`),
+        securedAPI.get(`/api/report/member/analyze?clubId=${clubId}&year=${year}&month=${month}`)
+      ]);
+      const data = memberRes.data;
+      setHowManyMembers(data.howManyMembers);
+      setHowManyMembersBetweenOneMonth(data.howManyMembersBetweenOneMonth);
+      setHowManyAccumulatedGuests(data.howManyAccumulatedGuests);
+      setHowManyGuestsBetweenOneMonth(data.howManyGuestsBetweenOneMonth);
+      setHowManyEventsBetweenOneMonth(data.howManyEventsBetweenOneMonth);
+      setMaleMembers(data.maleMembers);
+      setFemaleMembers(data.femaleMembers);
+      setGptMarkDown(gptRes.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  fetchClubReports();
+}, [activeTab, clubId]); 
 
   const genderPieData = {
     labels: ["남성 회원", "여성 회원"],
