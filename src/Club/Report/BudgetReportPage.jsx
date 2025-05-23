@@ -19,7 +19,7 @@ import { COLOR_PALETTE, LOADING_BUDGET_MESSAGES } from "../../Constants/Default"
 import securedAPI from "../../Axios/SecuredAPI";
 import MemberReportPage from "./MemberReportPage";
 import { useParams } from "react-router-dom";
-import { PulseLoader } from "react-spinners";
+import { HashLoader } from "react-spinners";
 
 ChartJS.register(
   CategoryScale,
@@ -143,21 +143,21 @@ const ReportBox = styled.div`
   color: #374151;
 `;
 
-
 const SpinnerOverlay = styled.div`
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(250, 250, 250, 0.6);
-  backdrop-filter: blur(2px);
+  background-color: rgba(15, 23, 42, 0.8); 
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 9999;
 `;
+
+
 
 const MarkdownBox = styled.div`
   padding: 2rem;
@@ -186,7 +186,7 @@ const BudgetReportPage = () => {
   const [categoryBudgets, setCategoryBudgets] = useState([]);
   const [gptReport, setGptReport] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [dotCount, setDotCount] = useState(0);
+//   const [dotCount, setDotCount] = useState(0);
   const [yearMonthText, setYearMonthText] = useState("");
   const [message, setMessage] = useState(LOADING_BUDGET_MESSAGES[0]);
 
@@ -229,11 +229,6 @@ useEffect(() => {
 }, [clubId]);
 
 useEffect(() => {
-  const dotTimer = setInterval(() => {
-    setDotCount(prev => (prev + 1) % 3);
-  }, 500);
-
-
   const messageTimer = setInterval(() => {
     const randomIndex = Math.floor(Math.random() * LOADING_BUDGET_MESSAGES.length);
     setMessage(LOADING_BUDGET_MESSAGES[randomIndex]); 
@@ -241,7 +236,6 @@ useEffect(() => {
 
 
   return () => {
-    clearInterval(dotTimer);
     clearInterval(messageTimer);
   };
 }, []);
@@ -288,22 +282,22 @@ return (
     <PageWrapper>
         {isLoading && (
             <SpinnerOverlay>
-            <PulseLoader color="#27ae60" size={15} margin={6} />
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2rem" }}>
+                <HashLoader color="#c9f529" size={60} />
                 <div
                 style={{
-                    marginTop: "1.2rem",
-                    fontSize: "2rem",
+                    fontSize: "3rem",
                     fontWeight: 900,
-                    color: "#4f46e5",
+                    color: "#FFF",
                     fontFamily: "'Segoe UI', 'Pretendard', 'Noto Sans KR', sans-serif",
                     transition: "opacity 0.3s ease",
                     letterSpacing: "0.3px",
-                    textAlign: "center",
+                    textAlign: "center"
                 }}
                 >
                 {message}
-                {".".repeat(dotCount)}
                 </div>
+            </div>
             </SpinnerOverlay>
         )}
       <TabBar>

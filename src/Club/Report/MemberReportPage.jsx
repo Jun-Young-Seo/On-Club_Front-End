@@ -14,7 +14,7 @@ import {
 } from "chart.js";
 import securedAPI from "../../Axios/SecuredAPI";
 import { useParams } from "react-router-dom";
-import { PulseLoader } from "react-spinners";
+import { HashLoader } from "react-spinners";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { LOADING_MEMBER_MESSAGES } from "../../Constants/Default";
@@ -74,13 +74,14 @@ const SpinnerOverlay = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(250, 250, 250, 0.6);
+  background-color: rgba(15, 23, 42, 0.8); 
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 9999;
 `;
+
 
 const MarkdownBox = styled.div`
   padding: 2rem;
@@ -96,9 +97,7 @@ const MemberReportPage = () => {
   const { clubId } = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [gptMarkDown, setGptMarkDown] = useState("");
-
-  const [dotCount, setDotCount] = useState(0);
-  const [message, setMessage] = useState("잠시만 기다려주세요");
+  const [message, setMessage] = useState(LOADING_MEMBER_MESSAGES[0]);
 
   const [howManyMembers, setHowManyMembers] = useState(0);
   const [howManyMembersBetweenOneMonth, setHowManyMembersBetweenOneMonth] = useState(0);
@@ -109,9 +108,6 @@ const MemberReportPage = () => {
   const [femaleMembers, setFemaleMembers] = useState(0);
 
   useEffect(() => {
-    const dotTimer = setInterval(() => {
-      setDotCount(prev => (prev + 1) % 4);
-    }, 500);
 
   const messageTimer = setInterval(() => {
     const randomIndex = Math.floor(Math.random() * LOADING_MEMBER_MESSAGES.length);
@@ -119,7 +115,6 @@ const MemberReportPage = () => {
   }, 1500);
 
     return () => {
-      clearInterval(dotTimer);
       clearInterval(messageTimer);
     };
   }, []);
@@ -197,23 +192,24 @@ const MemberReportPage = () => {
   return (
     <PageWrapper>
       {isLoading && (
-        <SpinnerOverlay>
-          <PulseLoader color="#27ae60" size={15} />
-          <div
-            style={{
-              marginTop: "1.2rem",
-              fontSize: "1.8rem",
-              fontWeight: 700,
-              color: "#4f46e5",
-              fontFamily: "'Segoe UI', 'Pretendard', 'Noto Sans KR', sans-serif",
-              letterSpacing: "0.3px",
-              textAlign: "center"
-            }}
-          >
-            {message}
-            {".".repeat(dotCount)}
-          </div>
-        </SpinnerOverlay>
+            <SpinnerOverlay>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2rem" }}>
+                <HashLoader color="#c9f529" size={60} />
+                <div
+                style={{
+                    fontSize: "3rem",
+                    fontWeight: 900,
+                    color: "#FFF",
+                    fontFamily: "'Segoe UI', 'Pretendard', 'Noto Sans KR', sans-serif",
+                    transition: "opacity 0.3s ease",
+                    letterSpacing: "0.3px",
+                    textAlign: "center"
+                }}
+                >
+                {message}
+                </div>
+            </div>
+            </SpinnerOverlay>
       )}
       <Grid>
         <CardWrapper>
