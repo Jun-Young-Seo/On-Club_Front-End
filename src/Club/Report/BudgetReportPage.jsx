@@ -361,7 +361,7 @@ return (
 
         </>
       ) : (
-            <MemberReportPage/>
+            <MemberReportPage activeTab={activeTab}/>
         )}
     </PageWrapper>
   );
