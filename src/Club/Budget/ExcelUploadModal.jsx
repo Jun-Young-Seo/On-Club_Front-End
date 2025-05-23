@@ -1,6 +1,8 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useDropzone } from 'react-dropzone';
+import { LOADING_EXCEL_MESSAGES } from '../../Constants/Default';
+import { HashLoader } from 'react-spinners';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -17,6 +19,20 @@ const ModalContent = styled.div`
   width: 400px;
   text-align: center;
 `;
+const FullScreenOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.55);
+  z-index: 1500;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+`;
+
 
 const Spinner = styled.div`
   margin-top: 20px;
@@ -92,7 +108,27 @@ const ExcelUploadModal = ({ onClose, onSubmit }) => {
     const [uploading, setUploading] = useState(false);
     const [birthDate, setBirthDate] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
-  
+    const [dotCount, setDotCount] = useState(0);
+    const [uploadMessage, setUploadMessage] = useState(LOADING_EXCEL_MESSAGES[0]);
+
+    useEffect(() => {
+      if (!uploading) return;
+
+      const dotTimer = setInterval(() => {
+        setDotCount(prev => (prev + 1) % 4);
+      }, 500);
+
+      const messageTimer = setInterval(() => {
+        const randomIndex = Math.floor(Math.random() * LOADING_EXCEL_MESSAGES.length);
+        setUploadMessage(LOADING_EXCEL_MESSAGES[randomIndex]);
+      }, 1500);
+
+      return () => {
+        clearInterval(dotTimer);
+        clearInterval(messageTimer);
+      };
+    }, [uploading]);
+
     const onDrop = useCallback((acceptedFiles) => {
       setErrorMessage('');
       if (acceptedFiles.length > 0) {
@@ -162,7 +198,22 @@ const ExcelUploadModal = ({ onClose, onSubmit }) => {
           </DropZoneArea>
   
           {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
-          {uploading && <Spinner />}
+         {uploading && (
+          <FullScreenOverlay>
+            <HashLoader color="#c9f529" size={60} />
+            <p style={{
+              marginTop: '1.2rem',
+              fontSize: '2rem',
+              fontWeight: 800,
+              color: '#FFF',
+              textAlign: 'center',
+            }}>
+              {uploadMessage}
+              {".".repeat(dotCount)}
+            </p>
+          </FullScreenOverlay>
+        )}
+
   
           <SubmitButton onClick={handleSubmit}>전송</SubmitButton>
           <CloseButton onClick={onClose}>닫기</CloseButton>
