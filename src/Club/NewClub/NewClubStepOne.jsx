@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import RegionModal from '../../User/RegionModal';
 import Swal from "sweetalert2";
+import { unSecuredAPI } from '../../Axios/UnsecuredAPI';
 
 const PageWrapper = styled.div`
   background-color: #fafece;
@@ -162,13 +163,38 @@ const NewClubStepOne = () => {
     setInvalidFields([]);
     return true;
   };
-  
-  const handleNext = () => {
-    if (validateForm()) {
-      window.location.href = "/new/club/step2";
+
+  const handleNext = async () => {
+  if (!validateForm()) return;
+
+  try {
+    const res = await unSecuredAPI.get('/api/club/find/by-name', {
+      params: { clubName: form.clubName }
+    });
+
+    if (res.data === true) {
+      Swal.fire({
+        icon: "error",
+        title: "중복된 이름",
+        text: "이미 사용 중인 클럽 이름이에요. 다른 이름을 입력해주세요.",
+        confirmButtonColor: "#e74c3c"
+      });
+      return;
     }
-  };
-  
+
+    // 중복 아님 → 다음 단계로 이동
+    window.location.href = "/new/club/step2";
+
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "서버 오류",
+      text: "중복 확인 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
+      confirmButtonColor: "#e74c3c"
+    });
+  }
+};
+
   return (
     <PageWrapper>
       <Card>
