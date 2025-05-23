@@ -20,6 +20,7 @@ import securedAPI from "../../Axios/SecuredAPI";
 import MemberReportPage from "./MemberReportPage";
 import { useParams } from "react-router-dom";
 import { PulseLoader } from "react-spinners";
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -62,6 +63,7 @@ const LogoText = styled.div`
   color: #1f2937;
   font-family: "Segoe UI", "Pretendard", "Noto Sans KR", sans-serif;
   text-align: center;
+  padding : 0.2rem;
 `;
 
 
@@ -163,7 +165,6 @@ const MarkdownBox = styled.div`
   background-color: #fff;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 
-  &.markdown-body {
     font-size: 1rem;
     line-height: 1.6;
 
@@ -175,7 +176,6 @@ const MarkdownBox = styled.div`
     h2 + ul {
       margin-top: 0 !important;
     }
-}
 `;
 
 const BudgetReportPage = () => {
@@ -186,9 +186,9 @@ const BudgetReportPage = () => {
   const [categoryBudgets, setCategoryBudgets] = useState([]);
   const [gptReport, setGptReport] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [messageIndex, setMessageIndex] = useState(0);
   const [dotCount, setDotCount] = useState(0);
   const [yearMonthText, setYearMonthText] = useState("");
+  const [message, setMessage] = useState(LOADING_BUDGET_MESSAGES[0]);
 
 useEffect(() => {
   const fetchClubReports = async () => {
@@ -196,13 +196,12 @@ useEffect(() => {
     const today = new Date();
     const month = today.getMonth() + 1;
     const year = today.getFullYear();
-    setYearMonthText(`${year}년 ${month}월 보고서입니다!`);
+    setYearMonthText(`${year}년 ${month-1}월 보고서입니다`);
 
     try {
-      const budgetPromise = securedAPI.get(`/api/report/budget/data?clubId=${clubId}&month=${month}`);
-      const gptPromise = securedAPI.get(`/api/report/budget/analyze?clubId=${clubId}&month=${month}`);
+      const budgetPromise = securedAPI.get(`/api/report/budget/data?clubId=${clubId}&year=${year}&month=${month}`);
+      const gptPromise = securedAPI.get(`/api/report/budget/analyze?clubId=${clubId}&year=${year}&month=${month}`);
         
-      console.log(clubId);
       const [budgetRes, gptRes] = await Promise.all([budgetPromise, gptPromise]);
 
       const { totalIncome, totalExpense, categorySummaries } = budgetRes.data;
@@ -234,9 +233,12 @@ useEffect(() => {
     setDotCount(prev => (prev + 1) % 3);
   }, 500);
 
+
   const messageTimer = setInterval(() => {
-    setMessageIndex(prev => (prev + 1) % LOADING_BUDGET_MESSAGES.length);
-  }, 3000);
+    const randomIndex = Math.floor(Math.random() * LOADING_BUDGET_MESSAGES.length);
+    setMessage(LOADING_BUDGET_MESSAGES[randomIndex]); 
+  }, 1500);
+
 
   return () => {
     clearInterval(dotTimer);
@@ -256,8 +258,8 @@ const getBarChartData = () => ({
   ]
 });
 
-const getPieChartData = (categories) => {
-  const colors = categories.map((_, i) => COLOR_PALETTE[i % COLOR_PALETTE.length]);
+const getPieChartData = (categories, palette) => {
+  const colors = categories.map((_, i) => palette[i % palette.length]);
   return {
     labels: categories.map(c => c.label),
     datasets: [{
@@ -267,6 +269,20 @@ const getPieChartData = (categories) => {
   };
 };
 
+const barOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  categoryPercentage: 0.4,
+  barPercentage: 0.6,
+  plugins: {
+    legend: { display: false },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+    },
+  },
+};
 
 return (
     <PageWrapper>
@@ -285,7 +301,7 @@ return (
                     textAlign: "center",
                 }}
                 >
-                {LOADING_BUDGET_MESSAGES[messageIndex]}
+                {message}
                 {".".repeat(dotCount)}
                 </div>
             </SpinnerOverlay>
@@ -297,6 +313,7 @@ return (
         <LogoHeader>
             <LogoImage src={logoImage} alt="클럽 로고" />
             <LogoText>{yearMonthText}</LogoText>
+            <LogoText>지난 달의 데이터를 모아 정리했어요!</LogoText>
         </LogoHeader>
 
 
@@ -309,7 +326,7 @@ return (
                      수입과 지출
                      </ChartTitle>
                 <Card>
-                    <Bar data={getBarChartData()} options={{ responsive: true, maintainAspectRatio: false }} />
+                    <Bar data={getBarChartData()} options={barOptions} />
                 </Card>
                 </CardWrapper>
 
@@ -319,7 +336,7 @@ return (
                     수입 분석
                      </ChartTitle>
                 <Card>
-                    <Pie data={getPieChartData(incomeCategories, ["#6366f1", "#60a5fa", "#a78bfa", "#c084fc"])} />
+                    <Pie data={getPieChartData(incomeCategories, COLOR_PALETTE.slice(0, incomeCategories.length))} />
                 </Card>
                 </CardWrapper>
 
@@ -329,7 +346,7 @@ return (
                     지출 분석
                 </ChartTitle>
                 <Card>
-                    <Pie data={getPieChartData(categoryBudgets, ["#f87171", "#fb923c", "#facc15", "#fcd34d"])} />
+                    <Pie data={getPieChartData(categoryBudgets, COLOR_PALETTE.slice(0, incomeCategories.length))} />
                 </Card>
                 </CardWrapper>
           </Grid>
@@ -340,7 +357,7 @@ return (
                     GPT 인사이트 보고서
                 </ChartTitle>
                 <ReportBox>
-                    <MarkdownBox className="markdown-body">
+                    <MarkdownBox>
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {gptReport}
                     </ReactMarkdown>
