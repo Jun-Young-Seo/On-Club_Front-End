@@ -1,4 +1,6 @@
-import React from "react";
+// ✅ 수정 목적: Chart.js 차트 3개 (Pie, Bar, Bar) 정상 렌더링 + 콘솔 무한 경고 해결 + 로딩 메시지 복구 + Bar 두께 조절 + 카테고리 영역 간격 축소
+
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Bar, Pie } from "react-chartjs-2";
 import {
@@ -10,43 +12,20 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import securedAPI from "../../Axios/SecuredAPI";
+import { useParams } from "react-router-dom";
+import { PulseLoader } from "react-spinners";
 import ReactMarkdown from "react-markdown";
-import "github-markdown-css/github-markdown-light.css";
 import remarkGfm from "remark-gfm";
+import { LOADING_MEMBER_MESSAGES } from "../../Constants/Default";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
-
-// 하드코딩된 샘플 데이터
-const mockData = {
-  howManyMembers: 21,
-  howManyMembersBetweenOneMonth: 22,
-  howManyAccumulatedGuests: 4,
-  howManyGuestsBetweenOneMonth: 0,
-  maleMembers: 9,
-  femaleMembers: 13,
-  mostAttendantMember: {
-    userName: "ABCD12543",
-    userTel: "010-1234-56738",
-    region: "서울특별시",
-    gender: "FEMALE",
-    birthDate: "2000-01-01",
-    career: 1
-  },
-  mostManyGamesMember: {
-    userName: "ABCD124",
-    userTel: "010-1235-5678",
-    region: "서울특별시",
-    gender: "FEMALE",
-    birthDate: "2000-01-01",
-    career: 1
-  }
-};
 
 const PageWrapper = styled.div`
   padding: 2rem;
   background-color: #f9fafb;
-  font-family: "Segoe UI", sans-serif;
 `;
+
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -76,13 +55,6 @@ const ChartTitle = styled.div`
   font-family: "Segoe UI", "Pretendard", "Noto Sans KR", sans-serif;
 `;
 
-const ChartEmoji = styled.div`
-  font-size: 2.2rem;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-`;
-
 const Card = styled.div`
   background: #fff;
   padding: 1.5rem;
@@ -90,120 +62,24 @@ const Card = styled.div`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   height: 360px;
 //   width: 100%;
+//   max-width: 400px;
   display: flex;
   align-items: center;
   justify-content: center;
 `;
 
-const MemberCard = styled.div`
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 1rem;
-  padding: 1.5rem;
+const SpinnerOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  max-width: 360px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+  height: 100%;
+  background-color: rgba(250, 250, 250, 0.6);
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
-`;
-
-const InfoRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  font-family: "Segoe UI", "Pretendard", "Noto Sans KR", sans-serif;
-`;
-
-const Label = styled.div`
-  font-weight: 600;
-  color: #1f2937;
-  font-size: 0.95rem;
-  white-space: nowrap;
-`;
-
-const Value = styled.div`
-  color: #4b5563;
-  font-size: 0.95rem;
-  text-align: right;
-  flex: 1;
-  word-break: break-word;
-`;
-
-
-const ReportBox = styled.div`
-  background-color: #ffffff;
-  border-radius: 1rem;
-  padding: 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  line-height: 1.6;
-  white-space: pre-wrap;
-  font-size: 1rem;
-  color: #374151;
-`;
-
-const MemberReportPage = () => {
-  const {
-    howManyMembers,
-    howManyMembersBetweenOneMonth,
-    howManyAccumulatedGuests,
-    howManyGuestsBetweenOneMonth,
-    maleMembers,
-    femaleMembers,
-    mostAttendantMember,
-    mostManyGamesMember
-  } = mockData;
-
-  const genderPieData = {
-    labels: ["남성 회원", "여성 회원"],
-    datasets: [
-      {
-        data: [maleMembers, femaleMembers],
-        backgroundColor: ["#60a5fa", "#f472b6"]
-      }
-    ]
-  };
-
-  const memberBarData = {
-    labels: ["누적 회원", "1개월간 신규 회원"],
-    datasets: [
-      {
-        label: "회원 수",
-        data: [howManyMembers, howManyMembersBetweenOneMonth],
-        backgroundColor: ["#4f46e5", "#a78bfa"]
-      }
-    ]
-  };
-
-  const guestBarData = {
-    labels: ["누적 게스트", "1개월간 게스트"],
-    datasets: [
-      {
-        label: "게스트 수",
-        data: [howManyAccumulatedGuests, howManyGuestsBetweenOneMonth],
-        backgroundColor: ["#10b981", "#6ee7b7"]
-      }
-    ]
-  };
-
-  const gptMemberReport = `
-## 👥 회원 활동 분석
-
-- 현재 클럽의 **총 정회원 수는 21명**이며, 지난 한 달 동안 **신규 가입자는 22명**, **게스트 방문은 0명**이었습니다.
-- 전체 회원 중 **여성 회원이 13명**, **남성 회원이 9명**으로 **여성 비율이 더 높습니다**.
-- 이달의 **최다 이벤트 참석자**는 \`ABCD12543\`님이며, **게임 최다 참가자**는 \`ABCD124\`님입니다.
-
-## 📌 운영 인사이트
-
-- 최근 한 달간 회원 수가 급격히 증가하였으나, 게스트 유입이 없었습니다. **초대 기반의 게스트 활동을 활성화**하면 신규 가입 전환율을 높일 수 있습니다.
-- 성비 불균형은 향후 **혼성 게임 또는 팀 구성에 영향을 줄 수** 있으므로, 이를 고려한 매칭 시스템 개선이 필요합니다.
-- 활동성이 높은 핵심 회원을 중심으로 **서브 리더 또는 소그룹 리더 제도 도입**을 검토해 보세요.
-
-## ✅ 다음 달 운영 제안
-
-- **게스트 초청 이벤트 개최**를 통해 외부 유입을 늘리고, 정회원으로의 전환을 유도해 보세요.
-- 활동 데이터 기반으로 **비활동 회원 리마인드 메시지 전송**을 통해 출석률을 높일 수 있습니다.
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 `;
 
 const MarkdownBox = styled.div`
@@ -211,187 +87,162 @@ const MarkdownBox = styled.div`
   border-radius: 1rem;
   background-color: #fff;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-
-  &.markdown-body {
-    font-size: 1rem;
-    line-height: 1.6;
-
-    h2 {
-      margin-top: 0 !important;
-      margin-bottom: 0 !important;
-    }
-
-    h2 + ul {
-      margin-top: 0 !important;
-    }
-}
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #374151;
 `;
+
+const MemberReportPage = () => {
+  const { clubId } = useParams();
+  const [isLoading, setIsLoading] = useState(true);
+  const [gptMarkDown, setGptMarkDown] = useState("");
+
+  const [dotCount, setDotCount] = useState(0);
+  const [message, setMessage] = useState("잠시만 기다려주세요");
+
+  const [howManyMembers, setHowManyMembers] = useState(0);
+  const [howManyMembersBetweenOneMonth, setHowManyMembersBetweenOneMonth] = useState(0);
+  const [howManyAccumulatedGuests, setHowManyAccumulatedGuests] = useState(0);
+  const [howManyGuestsBetweenOneMonth, setHowManyGuestsBetweenOneMonth] = useState(0);
+  const [howManyEventsBetweenOneMonth, setHowManyEventsBetweenOneMonth] = useState(0);
+  const [maleMembers, setMaleMembers] = useState(0);
+  const [femaleMembers, setFemaleMembers] = useState(0);
+
+  useEffect(() => {
+    const dotTimer = setInterval(() => {
+      setDotCount(prev => (prev + 1) % 4);
+    }, 500);
+
+  const messageTimer = setInterval(() => {
+    const randomIndex = Math.floor(Math.random() * LOADING_MEMBER_MESSAGES.length);
+    setMessage(LOADING_MEMBER_MESSAGES[randomIndex]); 
+  }, 1500);
+
+    return () => {
+      clearInterval(dotTimer);
+      clearInterval(messageTimer);
+    };
+  }, []);
+
+  useEffect(() => {
+    const fetchClubReports = async () => {
+      setIsLoading(true);
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth() + 1;
+      try {
+        const [memberRes, gptRes] = await Promise.all([
+          securedAPI.get(`/api/report/member/data?clubId=${clubId}&year=${year}&month=${month}`),
+          securedAPI.get(`/api/report/member/analyze?clubId=${clubId}&year=${year}&month=${month}`)
+        ]);
+        const data = memberRes.data;
+        setHowManyMembers(data.howManyMembers);
+        setHowManyMembersBetweenOneMonth(data.howManyMembersBetweenOneMonth);
+        setHowManyAccumulatedGuests(data.howManyAccumulatedGuests);
+        setHowManyGuestsBetweenOneMonth(data.howManyGuestsBetweenOneMonth);
+        setHowManyEventsBetweenOneMonth(data.howManyEventsBetweenOneMonth);
+        setMaleMembers(data.maleMembers);
+        setFemaleMembers(data.femaleMembers);
+        setGptMarkDown(gptRes.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchClubReports();
+  }, [clubId]);
+
+  const genderPieData = {
+    labels: ["남성 회원", "여성 회원"],
+    datasets: [{
+      data: [maleMembers, femaleMembers],
+      backgroundColor: ["#60a5fa", "#f472b6"]
+    }]
+  };
+
+  const memberBarData = {
+    labels: ["누적 회원", "월간 신규 회원", "월간 모임 수"],
+    datasets: [{
+      label: "회원/모임",
+      data: [howManyMembers, howManyMembersBetweenOneMonth, howManyEventsBetweenOneMonth],
+      backgroundColor: ["#10b981", "#6ee7b7", "#34d399"]
+    }]
+  };
+
+  const guestBarData = {
+    labels: ["누적 게스트", "월간 게스트", "월간 모임 수"],
+    datasets: [{
+      label: "게스트 수",
+      data: [howManyAccumulatedGuests, howManyGuestsBetweenOneMonth, howManyEventsBetweenOneMonth],
+      backgroundColor: ["#fbbf24", "#fcd34d", "#fde68a"]
+    }]
+  };
+
+  const barOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    categoryPercentage: 0.4,
+    barPercentage: 0.6,
+    plugins: {
+      legend: { display: false },
+    },
+    scales: {
+      y: {
+        beginAtZero: true
+      }
+    }
+  };
+
   return (
     <PageWrapper>
+      {isLoading && (
+        <SpinnerOverlay>
+          <PulseLoader color="#27ae60" size={15} />
+          <div
+            style={{
+              marginTop: "1.2rem",
+              fontSize: "1.8rem",
+              fontWeight: 700,
+              color: "#4f46e5",
+              fontFamily: "'Segoe UI', 'Pretendard', 'Noto Sans KR', sans-serif",
+              letterSpacing: "0.3px",
+              textAlign: "center"
+            }}
+          >
+            {message}
+            {".".repeat(dotCount)}
+          </div>
+        </SpinnerOverlay>
+      )}
       <Grid>
         <CardWrapper>
-          <ChartTitle>
-            <ChartEmoji>👤</ChartEmoji>
-            성비 통계
-          </ChartTitle>
+          <ChartTitle>👤 성비 통계</ChartTitle>
+          <Card><Pie data={genderPieData} /></Card>
+        </CardWrapper>
+
+        <CardWrapper>
+          <ChartTitle>👥 회원 통계</ChartTitle>
           <Card>
-            <Pie data={genderPieData} options={{ responsive: true }} />
+            <Bar data={memberBarData} options={barOptions} />
           </Card>
         </CardWrapper>
 
         <CardWrapper>
-          <ChartTitle>
-            <ChartEmoji>👥</ChartEmoji>
-            회원 통계
-          </ChartTitle>
+          <ChartTitle>🧾 게스트 통계</ChartTitle>
           <Card>
-            <Bar
-              data={memberBarData}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-              }}
-            />
-          </Card>
-        </CardWrapper>
-
-        <CardWrapper>
-          <ChartTitle>
-            <ChartEmoji>🧾</ChartEmoji>
-            게스트 통계
-          </ChartTitle>
-          <Card>
-            <Bar
-              data={guestBarData}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-              }}
-            />
+            <Bar data={guestBarData} options={barOptions} />
           </Card>
         </CardWrapper>
       </Grid>
 
-      <Grid>
-        <CardWrapper>
-          <ChartTitle>
-            <ChartEmoji>🏆</ChartEmoji>
-            이벤트 최다 참석자
-          </ChartTitle>
-          <MemberCard>
-                <InfoRow>
-                    <Label>👤 이름</Label>
-                    <Value>{mostManyGamesMember.userName}</Value>
-                </InfoRow>
-                <InfoRow>
-                    <Label>📞 전화번호</Label>
-                    <Value>{mostManyGamesMember.userTel}</Value>
-                </InfoRow>
-                <InfoRow>
-                    <Label>📍 지역</Label>
-                    <Value>{mostManyGamesMember.region}</Value>
-                </InfoRow>
-                <InfoRow>
-                    <Label>🚻 성별</Label>
-                    <Value>{mostManyGamesMember.gender === "FEMALE" ? "여성" : "남성"}</Value>
-                </InfoRow>
-                <InfoRow>
-                    <Label>🎂 생년월일</Label>
-                    <Value>{mostManyGamesMember.birthDate}</Value>
-                </InfoRow>
-                <InfoRow>
-                    <Label>🎾 구력</Label>
-                    <Value>{mostManyGamesMember.career}년</Value>
-                </InfoRow>
-            </MemberCard>
-
-          
-        </CardWrapper>
-
-        <CardWrapper>
-          <ChartTitle>
-            <ChartEmoji>🥇</ChartEmoji>
-            게임 최다 참가자
-          </ChartTitle>
-            <MemberCard>
-            <InfoRow>
-                <Label>👤 이름</Label>
-                <Value>{mostManyGamesMember.userName}</Value>
-            </InfoRow>
-            <InfoRow>
-                <Label>📞 전화번호</Label>
-                <Value>{mostManyGamesMember.userTel}</Value>
-            </InfoRow>
-            <InfoRow>
-                <Label>📍 지역</Label>
-                <Value>{mostManyGamesMember.region}</Value>
-            </InfoRow>
-            <InfoRow>
-                <Label>🚻 성별</Label>
-                <Value>{mostManyGamesMember.gender === "FEMALE" ? "여성" : "남성"}</Value>
-            </InfoRow>
-            <InfoRow>
-                <Label>🎂 생년월일</Label>
-                <Value>{mostManyGamesMember.birthDate}</Value>
-            </InfoRow>
-            <InfoRow>
-                <Label>🎾 구력</Label>
-                <Value>{mostManyGamesMember.career}년</Value>
-            </InfoRow>
-            </MemberCard>
-
-        </CardWrapper>
-        <CardWrapper>
-          <ChartTitle>
-            <ChartEmoji>🏆</ChartEmoji>
-            이 달의 득점왕
-          </ChartTitle>
-          <MemberCard>
-                <InfoRow>
-                    <Label>👤 이름</Label>
-                    <Value>{mostManyGamesMember.userName}</Value>
-                </InfoRow>
-                <InfoRow>
-                    <Label>📞 전화번호</Label>
-                    <Value>{mostManyGamesMember.userTel}</Value>
-                </InfoRow>
-                <InfoRow>
-                    <Label>📍 지역</Label>
-                    <Value>{mostManyGamesMember.region}</Value>
-                </InfoRow>
-                <InfoRow>
-                    <Label>🚻 성별</Label>
-                    <Value>{mostManyGamesMember.gender === "FEMALE" ? "여성" : "남성"}</Value>
-                </InfoRow>
-                <InfoRow>
-                    <Label>🎂 생년월일</Label>
-                    <Value>{mostManyGamesMember.birthDate}</Value>
-                </InfoRow>
-                <InfoRow>
-                    <Label>🎾 구력</Label>
-                    <Value>{mostManyGamesMember.career}년</Value>
-                </InfoRow>
-            </MemberCard>
-        </CardWrapper>
-              </Grid>
-                <CardWrapper>
-                <ChartTitle>
-                    <ChartEmoji>💡</ChartEmoji>
-                    GPT 인사이트 보고서
-                </ChartTitle>
-                <ReportBox>
-                    <MarkdownBox className="markdown-body">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {gptMemberReport}
-                    </ReactMarkdown>
-                    </MarkdownBox>
-                </ReportBox>
-                </CardWrapper>
-        </PageWrapper>
+      <CardWrapper>
+        <ChartTitle>💡 GPT 인사이트 보고서</ChartTitle>
+        <MarkdownBox>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{gptMarkDown}</ReactMarkdown>
+        </MarkdownBox>
+      </CardWrapper>
+    </PageWrapper>
   );
 };
 
