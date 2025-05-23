@@ -160,59 +160,82 @@ const NewClubStepThree = () => {
     const file = e.target.files[0];
     if (file) setBgPreview(URL.createObjectURL(file));
   };
+const handleClubSubmit = async () => {
+  try {
+    const clubName = sessionStorage.getItem('clubName');
+    const clubDescription = sessionStorage.getItem('clubDescription');
 
-  const handleClubSubmit = async () => {
-    try {
-      const clubName = sessionStorage.getItem('clubName');
-      const clubDescription = sessionStorage.getItem('clubDescription');
-  
-      if (!clubName || !clubDescription) {
-        Swal.fire({
-          icon: "warning",
-          title: "누락된 정보",
-          text: "클럽 이름이나 소개가 누락되었습니다.",
-          confirmButtonColor: "#27ae60"
-        });
-        return;
-      }
-  
-      const response = await securedAPI.post('/api/club/add', {
-        userId,
-        clubName,
-        clubDescription,
-        clubLogoURL: "",
-        clubBackgroundURL: ""
-      });
-  
-      const clubId = response.data.clubId;
+    if (!clubName || !clubDescription) {
       Swal.fire({
-        icon: "success",
-        title: "클럽 생성 완료",
-        text: `${clubName} 클럽이 성공적으로 생성되었습니다!`,
+        icon: "warning",
+        title: "누락된 정보",
+        text: "클럽 이름이나 소개가 누락되었습니다.",
         confirmButtonColor: "#27ae60"
-      }).then(() => {
-        // 이후 페이지로 이동하거나 추가 API 호출
-        window.location.href = `/clubs/${clubId}/detail`;
       });
-  
-    } catch (error) {
-      if (error.response?.status === 409) {
-        Swal.fire({
-          icon: "error",
-          title: "중복된 클럽 이름",
-          text: "이미 존재하는 클럽 이름입니다. 다른 이름을 사용해주세요.",
-          confirmButtonColor: "#e74c3c"
-        });
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "생성 실패",
-          text: "클럽 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
-          confirmButtonColor: "#e74c3c"
-        });
-      }
+      return;
     }
-  };
+
+    const logoFile = logoInputRef.current.files[0];
+    const bgFile = bgInputRef.current.files[0];
+
+    if (!logoFile || !bgFile) {
+      Swal.fire({
+        icon: "warning",
+        title: "이미지 누락",
+        text: "로고와 배경 이미지를 모두 업로드해주세요.",
+        confirmButtonColor: "#27ae60"
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("logoImageFile", logoFile);
+    formData.append("backgroundImageFile", bgFile);
+
+    const imageUploadRes = await securedAPI.post('/api/s3/add/club/images', formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+
+    const [logoUrl, bgUrl] = imageUploadRes.data;
+
+    const response = await securedAPI.post('/api/club/add', {
+      userId,
+      clubName,
+      clubDescription,
+      clubLogoURL: logoUrl,
+      clubBackgroundURL: bgUrl
+    });
+
+    const clubId = response.data.clubId;
+
+    Swal.fire({
+      icon: "success",
+      title: "클럽 생성 완료",
+      text: `${clubName} 클럽이 성공적으로 생성되었습니다!`,
+      confirmButtonColor: "#27ae60"
+    }).then(() => {
+      window.location.href = `/clubs/${clubId}`;
+    });
+
+  } catch (error) {
+    if (error.response?.status === 409) {
+      Swal.fire({
+        icon: "error",
+        title: "중복된 클럽 이름",
+        text: "이미 존재하는 클럽 이름입니다. 다른 이름을 사용해주세요.",
+        confirmButtonColor: "#e74c3c"
+      });
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "생성 실패",
+        text: "클럽 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+        confirmButtonColor: "#e74c3c"
+      });
+    }
+  }
+};
+
   
   return (
     <PageWrapper>
