@@ -75,7 +75,10 @@ const LoginButton = styled.button`
 
 const FirstScroll = () => {
     const navigate = useNavigate(); // useNavigate 훅 호출
+    
     const handleLoginClick = () => {
+        console.log('✅ BASE_URL:', process.env.REACT_APP_API_URL);
+
         navigate('/login'); // login 경로로 이동
     };
 

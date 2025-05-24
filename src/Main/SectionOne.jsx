@@ -90,6 +90,7 @@ const OutlinedPurpleButton = styled.button`
 
 
 const SectionOne = ({ id }) => {
+
   const navigate = useNavigate();
   return (
     <SectionWrapper id={id}>

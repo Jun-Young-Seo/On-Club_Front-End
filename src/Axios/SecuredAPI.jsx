@@ -2,9 +2,10 @@ import axios from "axios";
 import { unSecuredAPI } from "./UnsecuredAPI";
 import Swal from "sweetalert2";
 
+const BASE_URL = process.env.REACT_APP_API_URL;
+
 const securedAPI = axios.create({
-    // baseURL: 'https://api.on-club.co.kr',
-    baseURL: "http://localhost:8080",
+    baseURL: BASE_URL,
     headers: {
         'Content-Type': 'application/json',
     },
