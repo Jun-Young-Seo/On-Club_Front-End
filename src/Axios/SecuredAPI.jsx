@@ -29,23 +29,18 @@ securedAPI.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // 이미 재시도 했던 요청이면 루프 방지
-    if (error.response?.status === 403 && !originalRequest._retry) {
+    const status = error.response?.status;
+    const errorCode = error.response?.data?.error;
+    console.log(error);
+    //만료된 토큰에 대해 한번만 리프레시 시도 - Back JWTExceptionFilter에서 "Expired" 응답이 오는 경우면 만료토큰임
+      if (status === 401 && errorCode === "Expired" && !originalRequest._retry) { // case "Expired"
+        console.log("accessToken 만료로 리프레시 토큰을 이용해 재요청 시도");
       originalRequest._retry = true;
 
       const refreshToken = sessionStorage.getItem("refreshToken");
 
       if (!refreshToken) {
-        Swal.fire({
-          icon: "warning",
-          title: "로그인 정보가 만료되었습니다",
-          text: "다시 로그인해주세요.",
-          confirmButtonText: "확인"
-        }).then(() => {
-          sessionStorage.clear();
-          window.location.href = "/login";
-        });
-        return Promise.reject(error);
+        return handleSessionExpired();
       }
 
       try {
@@ -60,29 +55,34 @@ securedAPI.interceptors.response.use(
         );
 
         const newAccessToken = refreshResponse.data.accessToken;
+        console.log('갱신성공 : ',newAccessToken);
         sessionStorage.setItem('accessToken', newAccessToken);
 
-        // 새로운 토큰으로 요청 다시 시도
+        // 새 토큰으로 기존 요청 재시도
         originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
         return securedAPI(originalRequest);
       } catch (refreshError) {
-        Swal.fire({
-          icon: "warning",
-          title: "로그인 정보가 만료되었습니다",
-          text: "다시 로그인해주세요.",
-          confirmButtonText: "확인"
-        }).then(() => {
-          sessionStorage.clear();
-          window.location.href = "/login";
-        });
-
-        return Promise.reject(refreshError);
+        return handleSessionExpired(refreshError);
       }
     }
 
-    // 그 외의 에러는 그대로 반환
     return Promise.reject(error);
   }
 );
+
+// 세션 만료 공통 처리
+function handleSessionExpired(err) {
+  Swal.fire({
+    icon: "warning",
+    title: "로그인 정보가 만료되었습니다",
+    text: "다시 로그인해주세요.",
+    confirmButtonText: "확인"
+  }).then(() => {
+    sessionStorage.clear();
+    window.location.href = "/login";
+  });
+
+  return Promise.reject(err || new Error("Session expired"));
+}
 
 export default securedAPI;
