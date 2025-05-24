@@ -25,6 +25,9 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm install
 
+      - name: Create .env.production
+        run: echo "REACT_APP_API_URL=https://api.on-club.co.kr" > .env.production
+
       - name: Build
         run: CI=false npm run build
 
