@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { login } from "../Axios/UnsecuredAPI";
 import loginBgImg from "../assets/images/login_bg.jpg";
 import Swal from "sweetalert2";
+
+const primaryColor = "#a4d007";
+const warningColor = "#e74c3c";
 
 const PageContainer = styled.div`
   height: 90vh;
@@ -28,7 +31,6 @@ const LeftPanel = styled.div`
   padding: 40px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
 `;
 
@@ -45,29 +47,50 @@ const Subtitle = styled.p`
   margin-bottom: 20px;
 `;
 
-const InputField = styled.div`
+const InputGroup = styled.div`
+  display: flex;
+  gap: 0.5rem;
   width: 90%;
   margin-bottom: 12px;
+  justify-content: center;
+  align-items: center;
 `;
 
-const Input = styled.input`
-  width: 100%;
+const TelInput = styled.input`
+  width: 5rem;
   padding: 12px;
+  text-align: center;
   border: 1.5px solid #ddd;
   border-radius: 10px;
   font-size: 14px;
   background: #f8f9fc;
   color: #333;
   outline: none;
-  transition: border-color 0.2s;
   &:focus {
-    border-color: #f5b800;
+    border-color: ${primaryColor};
+    background: white;
+  }
+`;
+
+const Input = styled.input`
+  width: 87%;
+  padding: 12px;
+  margin-top:12px;
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  font-size: 14px;
+  background: #f8f9fc;
+  color: #333;
+  outline: none;
+  margin-bottom: 12px;
+  &:focus {
+    border-color: ${primaryColor};
     background: white;
   }
 `;
 
 const ErrorText = styled.p`
-  color: red;
+  color: ${warningColor};
   font-size: 12px;
   margin-top: 5px;
   display: ${({ show }) => (show ? "block" : "none")};
@@ -79,7 +102,7 @@ const LoginButton = styled.button`
   font-size: 14px;
   font-weight: bold;
   color: white;
-  background-color: #a4d007;
+  background-color: ${primaryColor};
   border: none;
   border-radius: 10px;
   cursor: pointer;
@@ -147,53 +170,68 @@ const SmallText = styled.p`
 
 const Login = () => {
   const navigate = useNavigate();
-  const [userTel, setUserTel] = useState("");
+  const [phone1, setPhone1] = useState("");
+  const [phone2, setPhone2] = useState("");
+  const [phone3, setPhone3] = useState("");
   const [password, setPassword] = useState("");
   const [loginFailed, setLoginFailed] = useState(false);
+  
+  const ref1 = useRef(null);
+  const ref2 = useRef(null);
+  const ref3 = useRef(null);
+
+  const passwordRef = useRef(null);
+
+  const handlePhoneChange = (e, setter, maxLength, nextRef) => {
+    const value = e.target.value.replace(/\D/g, "");
+    if (value.length <= maxLength) {
+      setter(value);
+      if (value.length === maxLength && nextRef?.current) {
+        nextRef.current.focus();
+      }
+    }
+  };
 
   const handleLogin = async () => {
+    const userTel = `${phone1}-${phone2}-${phone3}`;
     try {
       const response = await login({ userTel, password });
-  
+
       sessionStorage.setItem("userId", response.data.userId);
       sessionStorage.setItem("accessToken", response.data.accessToken);
       sessionStorage.setItem("refreshToken", response.data.refreshToken);
-      
+
       setLoginFailed(false);
-  
+
       Swal.fire({
         icon: "success",
         title: "로그인 성공!",
         text: `${response.data.userName}님, 환영합니다 😊`,
         confirmButtonColor: "#5fbd7b",
         timer: 1500,
-        showConfirmButton: false
+        showConfirmButton: false,
       });
-  
+
       setTimeout(() => navigate("/clubs"), 1600);
-  
     } catch (error) {
-      console.log(error);
+      setLoginFailed(true);
       if (error.response?.status === 401) {
-        setLoginFailed(true);
         Swal.fire({
           icon: "error",
           title: "로그인 실패",
           text: "전화번호 또는 비밀번호가 올바르지 않습니다.",
-          confirmButtonColor: "#e74c3c"
+          confirmButtonColor: warningColor,
         });
       } else {
-        console.error(error);
         Swal.fire({
           icon: "error",
           title: "서버 오류",
           text: "잠시 후 다시 시도해주세요.",
-          confirmButtonColor: "#e74c3c"
+          confirmButtonColor: warningColor,
         });
       }
     }
   };
-  
 
   return (
     <PageContainer>
@@ -201,28 +239,59 @@ const Login = () => {
         <LeftPanel>
           <Title>On-club</Title>
           <Subtitle>로그인 후 테니스 활동을 즐기세요!</Subtitle>
-          <InputField>
-            <Input
+          <InputGroup>
+            <TelInput
               type="text"
-              placeholder="010-0000-0000"
-              value={userTel}
-              onChange={(e) => setUserTel(e.target.value)}
-              required
+              value={phone1}
+              maxLength={3}
+              placeholder="010"
+              ref={ref1}
+              onChange={(e) => handlePhoneChange(e, setPhone1, 3, ref2)}
             />
-          </InputField>
-          <InputField>
-            <Input
-              type="password"
-              placeholder="비밀번호"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+            <span>-</span>
+            <TelInput
+              type="text"
+              value={phone2}
+              maxLength={4}
+              placeholder="1234"
+              ref={ref2}
+              onChange={(e) => handlePhoneChange(e, setPhone2, 4, ref3)}
             />
-          </InputField>
-          <ErrorText show={loginFailed}>아이디와 비밀번호를 확인해주세요.</ErrorText>
+            <span>-</span>
+            <TelInput
+              type="text"
+              value={phone3}
+              maxLength={4}
+              placeholder="5678"
+              ref={ref3}
+              onChange={(e) => {
+                handlePhoneChange(e, setPhone3, 4);
+                if (e.target.value.length === 4 && passwordRef.current) {
+                  passwordRef.current.focus();
+                }
+              }}
+            />
+          </InputGroup>
+              <Input
+                type="password"
+                placeholder="비밀번호"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleLogin(); 
+                  }
+                }}
+                ref={passwordRef}
+              />
+
+          <ErrorText show={loginFailed}>
+            아이디와 비밀번호를 확인해주세요.
+          </ErrorText>
           <LoginButton onClick={handleLogin}>로그인</LoginButton>
           <SignupLink>
-            계정이 없으신가요? <SignupButton href="/signup">회원가입</SignupButton>
+            계정이 없으신가요?{" "}
+            <SignupButton href="/signup">회원가입</SignupButton>
           </SignupLink>
         </LeftPanel>
         <RightPanel>
