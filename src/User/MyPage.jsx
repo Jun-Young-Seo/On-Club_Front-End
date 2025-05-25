@@ -277,6 +277,8 @@ const Dot = styled.div`
 const LeftColumn = styled.div`
   display: flex;
   flex-direction: column;
+  width : 0;
+  min-width : 0;
   flex: 1;
   justify-content: space-between;
 `;
