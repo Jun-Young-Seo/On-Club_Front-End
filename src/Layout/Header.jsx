@@ -8,6 +8,7 @@ import { NotificationContext } from "../User/Notification/NotificationContext";
 import logo from "../assets/images/t.png";
 import logoFont from "../assets/images/logo.svg";
 import Swal from "sweetalert2";
+import refreshImage from "../assets/images/refresh.png";
 
 // ─── Styled Components ───
 const HeaderContainer = styled.header`
@@ -148,19 +149,51 @@ const DropdownHeader = styled.div`
   justify-content: space-between;
   padding: 1vh 2vh;
   font-weight: bold;
+  align-items : center;
   border-bottom: 0.1vh solid #eee;
 `;
-
 const RefreshButton = styled.button`
-  background: none;
+  background: rgba(0, 0, 0, 0.03);
   border: none;
-  font-size: 2vh;
+  border-radius: 6px;
+  padding: 0.4rem;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s;
+
+  img {
+    width: 1.5vw;
+    height: 1.5vw;
+    transition: transform 0.4s ease;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transform: scale(1.05);
+
+    img {
+      transform: rotate(90deg); /* 회전 애니메이션 */
+    }
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+
   &:disabled {
-    color: #ccc;
-    cursor: default;
+    opacity: 0.4;
+    cursor: not-allowed;
+    box-shadow: none;
+
+    img {
+      transform: none;
+    }
   }
 `;
+
 
 const NotificationItem = styled.div`
   padding: 1vh 0;
@@ -366,8 +399,10 @@ const Header = () => {
             {showNoti && (
               <NotificationDropdown ref={dropdownRef}>
                 <DropdownHeader>
-                  <span>알림</span>
-                  <RefreshButton onClick={fetchNotifications} disabled={loading}>🔄</RefreshButton>
+                    <div>알림</div>
+                  <RefreshButton onClick={fetchNotifications} disabled={loading}>
+                    <img src={refreshImage} alt="새로고침" width="20" height="20" />
+                  </RefreshButton>
                 </DropdownHeader>
 
                 {loading ? (

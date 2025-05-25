@@ -102,7 +102,9 @@ const ClubCardsWrapper = styled.div`
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 
-  width : 100%;
+  width: 100%;
+  height: 100%;         
+  min-height: 33vh;     
   border: 0.3vh solid #e5e7eb;
   border-radius: 2vh;
   background: white;
@@ -114,24 +116,24 @@ const ClubCardsWrapper = styled.div`
 `;
 
 
+
 const ClubCard = styled.div`
-  flex: 0 0 100%;          
-  min-width: 100%;     
+  flex: 0 0 100%;
+  min-width: 100%;
   scroll-snap-align: start;
   box-sizing: border-box;
-  padding: 2vh 2vw;
+  height: 100%; // ✅ 부모 높이 따라감
 
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 
+  padding: 2vh 2vw;
   background-color: #fff;
-
-  border: 0.3vh solid #e5e7eb;             
+  border: 0.3vh solid #e5e7eb;
   border-radius: 2vh;
-  box-shadow: 0 0.6vh 1.5vh rgba(0, 0, 0, 0.08); 
-
+  box-shadow: 0 0.6vh 1.5vh rgba(0, 0, 0, 0.08);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 
   &:hover {
@@ -139,6 +141,7 @@ const ClubCard = styled.div`
     box-shadow: 0 0.8vh 2vh rgba(0, 0, 0, 0.12);
   }
 `;
+
 
 
 
@@ -282,7 +285,38 @@ const LeftColumn = styled.div`
   flex: 1;
   justify-content: space-between;
 `;
+const ArrowButton = styled.button`
+  position: absolute;
+  top: 45%;
+  transform: translateY(-50%);
+  background-color: white;
+  border: 0.2vh solid #ccc;
+  border-radius: 50%;
+  box-shadow: 0 0.3vh 1vh rgba(0, 0, 0, 0.1);
+  padding: 1vh 1.2vh;
+  z-index: 10;
+  cursor: pointer;
+  font-size: 2vh;
 
+  &:hover {
+    background-color: #f3f4f6;
+  }
+`;
+
+const LeftArrow = styled(ArrowButton)`
+  left: -1.8vh;
+`;
+
+const RightArrow = styled(ArrowButton)`
+  right: -1.8vh;
+`;
+
+const CarouselContainer = styled.div`
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+`;
 
 const MyPage = () => {
     const [userInfo, setUserInfo] = useState(null);
@@ -297,8 +331,13 @@ const MyPage = () => {
     const navigate = useNavigate();
 
     const userId = sessionStorage.getItem('userId');
+
+    const handlePrev = () => setActiveIndex((prev) => Math.max(0, prev - 1));
+    const handleNext = () => setActiveIndex((prev) => Math.min(clubList.length - 1, prev + 1));
+
     useEffect(() => {
     const fetchUserInfo = async () => {
+        
         const today = new Date();
         const year = today.getFullYear();
         const month = today.getMonth()+1;
@@ -313,6 +352,7 @@ const MyPage = () => {
         setCountTotalParticipates(data.countAccumulateParticipant);
         
         const clubRes = await securedAPI.get(`/api/club/find/by-user_id?userId=${userId}`);
+        console.log(clubRes.data);
         setClubList(clubRes.data);
 
         const response = await securedAPI.get(`/api/event/mypage?userId=${userId}`);
@@ -329,14 +369,15 @@ const MyPage = () => {
 
 useEffect(() => {
   const handleScroll = () => {
-    if (!carouselRef.current) return;
-    const scrollLeft = carouselRef.current.scrollLeft;
-    const cardWidth = carouselRef.current.offsetWidth;
-    const index = Math.round(scrollLeft / cardWidth);
-    setActiveIndex(index);
+    // if (!carouselRef.current) return;
+    // const scrollLeft = carouselRef.current.scrollLeft;
+    // const cardWidth = carouselRef.current.offsetWidth;
+    // const index = Math.round(scrollLeft / cardWidth);
+    // setActiveIndex(index);
   };
 
   const wrapper = carouselRef.current;
+
   if (wrapper) {
     wrapper.addEventListener("scroll", handleScroll);
   }
@@ -347,6 +388,15 @@ useEffect(() => {
     }
   };
 }, []);
+
+useEffect(() => {
+  if (!carouselRef.current) return;
+  const cardWidth = carouselRef.current.offsetWidth;
+  carouselRef.current.scrollTo({
+    left: cardWidth * activeIndex,
+    behavior: "smooth",
+  });
+}, [activeIndex]);
 
   const getProfileImage = () => {
   if (userInfo?.profileImageUrl) return userInfo.profileImageUrl;
@@ -401,28 +451,38 @@ useEffect(() => {
                 <StatLabel>전체 출석</StatLabel>
             </StatItem>
             </StatBox>
-      </TopSection>
+            </TopSection>
                 <ClubAndCalendarSection>
                 <LeftColumn>
+                <CarouselContainer>
+                    <LeftArrow onClick={handlePrev}>←</LeftArrow>
+
                     <ClubCardsWrapper ref={carouselRef}>
                     {clubList.map((club, index) => (
-                      <ClubCard key={club.club_id} onClick={() => navigate(`/clubs/${club.club_id}`)}>
+                    
+                        <ClubCard key={club.club_id} onClick={() => navigate(`/clubs/${club.club_id}`)}>
                         <ClubBackground bgImage={club.clubBackgroundImageURL} index={index}>
                             <ClubLogo src={club.clubLogoURL} alt="Club Logo" />
                         </ClubBackground>
                         <ClubName>{club.clubName}</ClubName>
-
                         </ClubCard>
                     ))}
                     </ClubCardsWrapper>
 
-                    <IndicatorWrapper>
-                    {clubList.map((_, idx) => (
-                        <Dot key={idx} active={idx === activeIndex} />
-                    ))}
-                    </IndicatorWrapper>
-                </LeftColumn>
+                    <RightArrow onClick={handleNext}>→</RightArrow>
+                </CarouselContainer>
 
+                <IndicatorWrapper>
+                    {clubList.map((_, idx) => (
+                    <Dot
+                        key={idx}
+                        active={idx === activeIndex}
+                        onClick={() => setActiveIndex(idx)}
+                        style={{ cursor: "pointer" }}
+                    />
+                    ))}
+                </IndicatorWrapper>
+                </LeftColumn>
                 <CalendarArea>
                     <MyPageCalendar events={events} />
                 </CalendarArea>
