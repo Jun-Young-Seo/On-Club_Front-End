@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { login } from "../Axios/UnsecuredAPI";
 import loginBgImg from "../assets/images/login_bg.jpg";
 import Swal from "sweetalert2";
+import smile from "../assets/images/smile.png";
 
 const primaryColor = "#a4d007";
 const warningColor = "#e74c3c";
@@ -206,11 +207,17 @@ const Login = () => {
       Swal.fire({
         icon: "success",
         title: "로그인 성공!",
-        text: `${response.data.userName}님, 환영합니다 😊`,
+        html: `
+          <div style="font-size: 16px;">
+            <strong>${response.data.userName}</strong>님, 환영합니다 
+            <img src="${smile}" alt="😊" style="width: 2vw; height: 3vh; vertical-align: middle; margin-left: 4px;" />
+          </div>
+        `,
         confirmButtonColor: "#5fbd7b",
         timer: 1500,
         showConfirmButton: false,
       });
+
 
       setTimeout(() => navigate("/clubs"), 1600);
     } catch (error) {
