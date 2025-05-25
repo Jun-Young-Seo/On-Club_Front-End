@@ -291,6 +291,8 @@ const MyPage = () => {
     const [countTotalParticipates, setCountTotalParticipates] = useState(0);
     const [clubList, setClubList] = useState([]);
     const [activeIndex, setActiveIndex] = useState(0);
+    const [events, setEvents] = useState([]);
+
     const carouselRef = useRef(null);
     const navigate = useNavigate();
 
@@ -311,8 +313,11 @@ const MyPage = () => {
         setCountTotalParticipates(data.countAccumulateParticipant);
         
         const clubRes = await securedAPI.get(`/api/club/find/by-user_id?userId=${userId}`);
-        console.log(clubRes.data);
         setClubList(clubRes.data);
+
+        const response = await securedAPI.get(`/api/event/mypage?userId=${userId}`);
+        setEvents(response.data);
+        console.log(response.data);
 
       } catch (err) {
         console.error("유저 정보 불러오기 실패:", err);
@@ -419,7 +424,7 @@ useEffect(() => {
                 </LeftColumn>
 
                 <CalendarArea>
-                    <MyPageCalendar />
+                    <MyPageCalendar events={events} />
                 </CalendarArea>
                 </ClubAndCalendarSection>
 
