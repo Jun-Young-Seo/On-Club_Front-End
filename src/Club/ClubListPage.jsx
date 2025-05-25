@@ -9,28 +9,30 @@ import logoImage from "../assets/images/cute_logo_2.svg";
 
 
 const PageContainer = styled.div`
-  padding: 120px 20px 20px;
+  padding: 20px;
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  padding-top:120px;
   background-color: #f9fafb;
+
 `;
 
 const ClubGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));  // 반응형 핵심
-  gap: 2rem;
+  grid-template-columns: repeat(3, minmax(400px, 1fr)); 
+  gap: 4vw;
   justify-content: center;
-  margin: 0 auto;
-  width: 100%;
-  max-width: 1300px;
-  padding: 0 1rem;
+  margin : 0 auto;
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(1, minmax(400px, 1fr));
+  }
 `;
 
 const ClubCard = styled.div`
   position: relative;
-  width: 100%;
+  width: 25vw;
   aspect-ratio: 3 / 4.5;
   border-radius: 1rem;
   overflow: hidden;
@@ -42,18 +44,23 @@ const ClubCard = styled.div`
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 
   &:hover {
-    transform: translateY(-5px) scale(1.03);
+    transform: translateY(-5px) scale(1.05);
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
   }
+
+  @media (max-width: 600px) {
+    max-width: 90vw;
+  }
 `;
+
 
 const ClubBackground = styled.div`
   position: relative;
   height: 60%;
-  background: ${({ bgImage, index }) =>
-    bgImage
-      ? `url(${bgImage})`
-      : DEFAULT_BACKGROUND_COLORS[index % DEFAULT_BACKGROUND_COLORS.length]};
+  background: ${(props) =>
+    props.bgImage
+      ? `url(${props.bgImage})`
+      : DEFAULT_BACKGROUND_COLORS[props.index % DEFAULT_BACKGROUND_COLORS.length]};
   background-size: cover;
   background-position: center;
 `;
@@ -63,8 +70,8 @@ const ClubLogo = styled.img`
   top: 50%; 
   left: 50%;
   transform: translate(-50%, -50%);
-  width: clamp(80px, 20vw, 120px);
-  aspect-ratio: 1 / 1; /* 정사각형 유지 */
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   border: 6px solid white;
   background: white;
@@ -73,34 +80,34 @@ const ClubLogo = styled.img`
   z-index: 2;
 `;
 
-
 const ClubInfo = styled.div`
-  padding: 4.5rem 1rem 1.5rem;
+  padding: 4.5rem 1.2rem 1.5rem;
   text-align: center;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: space-between; 
   flex: 1;
 `;
 
+
 const ClubName = styled.h3`
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #111827;
 `;
-
 const ClubDescription = styled.div`
   margin-top: 0.5rem;
   font-size: 0.95rem;
   color: #4b5563;
   line-height: 1.5;
-  min-height: 5.7em;
+  min-height: 5.7em; /* 줄 수 제한 대신 공간 확보 */
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
 `;
+
 
 const TagList = styled.div`
   margin-top: 1rem;
@@ -115,11 +122,11 @@ const Tag = styled.span`
   font-size: 0.85rem;
   background-color: #f3f4f6;
   color: #374151;
+  // border: 1px solid #d1d5db;
   border-radius: 9999px;
   font-weight: 500;
   white-space: nowrap;
 `;
-
 const SearchContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -130,35 +137,35 @@ const SearchContainer = styled.div`
   border: 1px solid #e5e7eb; 
   border-radius: 1rem;
   background-color: #fff;
-  width: 90%;
+  width: 60%;
   max-width: 700px;
   margin-left: auto;
   margin-right: auto;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+
 `;
 
 const SearchInput = styled.input`
   padding: 0.7rem 1.2rem;
   width: 100%;
   font-size: 1rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid #d1d5db; // soft border
   border-radius: 8px;
   outline: none;
   transition: border 0.2s ease;
-  text-align: center;
-
+  text-align:center;
   &:focus {
-    border-color: #7c3aed;
+    border-color: #7c3aed; // violet
     box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
   }
 `;
 
+
 const LogoIcon = styled.img`
-  height: clamp(100px, 12vw, 160px);
-  width: clamp(100px, 12vw, 160px);
+  height: 160px;
+  width: 160px;
   object-fit: contain;
 `;
-
 
 const ClubListPage = () => {
   const [clubs, setClubs] = useState([]);
