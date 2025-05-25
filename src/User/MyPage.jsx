@@ -102,6 +102,7 @@ const ClubCardsWrapper = styled.div`
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 
+  width : 100%;
   border: 0.3vh solid #e5e7eb;
   border-radius: 2vh;
   background: white;
