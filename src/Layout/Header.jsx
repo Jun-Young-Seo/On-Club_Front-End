@@ -13,11 +13,11 @@ import Swal from "sweetalert2";
 const HeaderContainer = styled.header`
   display: flex;
   align-items: center;
-  padding: 2vh 5%;
+  padding: 2vh 5vw;
   background: white;
-  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0.2vh 1vh rgba(0, 0, 0, 0.05);
   width: 100%;
-  height: 30px;
+  height: 3vh;
   position: fixed;
   top: 0;
   left: 0;
@@ -27,26 +27,26 @@ const HeaderContainer = styled.header`
 const LogoContainer = styled.div`
   display: flex;
   align-items: center;
-  font-size: 22px;
+  font-size: 2.0vh;
   font-weight: bold;
   color: black;
   cursor: pointer;
   flex-shrink: 0;
-  min-width: 150px;
+  min-width: 15vw;
 `;
 
 const LogoIcon = styled.div`
-  width: 40px;
-  height: 40px;
+  width: 5vh;
+  height: 5vh;
   background-image: url(${logo});
   background-size: cover;
   background-position: center;
-  border-radius: 4px;
-  // margin-right: 8px;
+  border-radius: 0.5vh;
 `;
+
 const NavLinks = styled.nav`
   display: flex;
-  flex-grow: 0.9;
+  flex-grow: 0.85;
   justify-content: center;
   gap: 5vw;
 
@@ -54,21 +54,17 @@ const NavLinks = styled.nav`
     position: relative;
     text-decoration: none;
     color: black;
-    font-size: 16px;
+    font-size: 2.0vh;
     font-weight: 600;
     transition: color 0.3s ease;
-
-    &:hover {
-      // color: #3B82F6;
-    }
 
     &::after {
       content: "";
       position: absolute;
       left: 0;
-      bottom: -4px;
+      bottom: -0.5vh;
       width: 100%;
-      height: 2px;
+      height: 0.2vh;
       background-color: #2563EB;
       transform: scaleX(0);
       transform-origin: left;
@@ -81,22 +77,21 @@ const NavLinks = styled.nav`
   }
 `;
 
-
 const AuthContainer = styled.div`
   display: flex;
   flex-shrink: 0;
-  gap: 1vw;
-  min-width: 160px;
+  gap: 1.5vw;
+  min-width: 16vw;
   position: relative;
 `;
 
 const AuthButton = styled.button`
   background: ${(props) => (props.primary ? "transparent" : "#7C3AED")};
   color: ${(props) => (props.primary ? "black" : "white")};
-  border: 3px solid #7C3AED;
-  padding: 0.6rem 1.5rem;
-  border-radius: 9999px;
-  font-size: 1rem;
+  border: 0.3vh solid #7C3AED;
+  padding: 1vh 2.5vh;
+  border-radius: 50vh;
+  font-size: 1.6vh;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -116,50 +111,50 @@ const NotificationWrapper = styled.div`
 `;
 
 const BellIcon = styled(FiBell)`
-  font-size: 30px;
+  font-size: 3vh;
   cursor: pointer;
   color: #333;
 `;
 
 const Badge = styled.div`
   position: absolute;
-  top: -0.01vh;
+  top: -0.5vh;
   right: -0.7vw;
   background: red;
   color: white;
-  font-size: 12px;
-  padding: 2px 6px;
+  font-size: 1.2vh;
+  padding: 0.3vh 0.6vh;
   border-radius: 50%;
   font-weight: bold;
 `;
 
 const NotificationDropdown = styled.div`
   position: absolute;
-  top: 35px;
+  top: 4vh;
   right: 0;
   width: 30vw;
-  max-height : 30vh;
-  overflow-y : auto;
+  max-height: 30vh;
+  overflow-y: auto;
   background: white;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+  border: 0.1vh solid #ddd;
+  border-radius: 1vh;
+  box-shadow: 0 0.4vh 1vh rgba(0, 0, 0, 0.1);
   z-index: 200;
-  padding: 0.8rem 1rem;
+  padding: 1vh 2vh;
 `;
 
 const DropdownHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  padding: 0.5rem 1rem;
+  padding: 1vh 2vh;
   font-weight: bold;
-  border-bottom: 1px solid #eee;
+  border-bottom: 0.1vh solid #eee;
 `;
 
 const RefreshButton = styled.button`
   background: none;
   border: none;
-  font-size: 1.1rem;
+  font-size: 2vh;
   cursor: pointer;
   &:disabled {
     color: #ccc;
@@ -168,13 +163,13 @@ const RefreshButton = styled.button`
 `;
 
 const NotificationItem = styled.div`
-  padding: 0.8rem 0;
-  border-bottom: 1px solid #eee;
-  font-size: 0.9rem;
+  padding: 1vh 0;
+  border-bottom: 0.1vh solid #eee;
+  font-size: 1.4vh;
   color: #333;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 0.5vh;
   position: relative;
 
   &:last-child {
@@ -186,25 +181,25 @@ const NotificationTitle = styled.div`
   font-weight: bold;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 1rem;
+  gap: 0.8vh;
+  font-size: 1.6vh;
 `;
 
 const NotificationMessage = styled.div`
-  font-size: 0.88rem;
+  font-size: 1.4vh;
   color: #444;
 `;
 
 const NotificationMeta = styled.div`
-  font-size: 0.75rem;
+  font-size: 1.2vh;
   color: #888;
 `;
 
 const CloseButton = styled(IoClose)`
   position: absolute;
-  top: 6px;
-  right: 4px;
-  font-size: 18px;
+  top: 0.6vh;
+  right: 0.4vh;
+  font-size: 1.8vh;
   color: #999;
   cursor: pointer;
 
@@ -214,14 +209,14 @@ const CloseButton = styled(IoClose)`
 `;
 
 const ViewAllButton = styled.button`
-  margin-top: 0.5rem;
+  margin-top: 1vh;
   width: 100%;
-  padding: 0.6rem 0;
+  padding: 1vh 0;
   border: none;
   background-color: #f5f5f5;
-  border-radius: 8px;
+  border-radius: 1vh;
   font-weight: bold;
-  font-size: 0.9rem;
+  font-size: 1.4vh;
   color: #333;
   cursor: pointer;
 
@@ -231,12 +226,12 @@ const ViewAllButton = styled.button`
 `;
 
 const EmojiIcon = styled.span`
-  font-size: 1.7rem;
+  font-size: 2vh;
 `;
 
 const LogoFont = styled.img`
-  height: 22px;
-  margin-left: 8px;
+  height: 2.0vh;
+  margin-left: 1vh;
   object-fit: contain;
   vertical-align: middle;
 `;
@@ -245,7 +240,7 @@ const StyledNavLink = styled.span`
   position: relative;
   text-decoration: none;
   color: black;
-  font-size: 16px;
+  font-size: 2.0vh;
   font-weight: 600;
   cursor: pointer;
 
@@ -257,15 +252,26 @@ const StyledNavLink = styled.span`
     content: "";
     position: absolute;
     left: 0;
-    bottom: -4px;
+    bottom: -0.4vh;
     width: 100%;
-    height: 2px;
+    height: 0.2vh;
     background-color: #2563EB;
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 0.3s ease;
   }
 `;
+
+const MyPageLink = styled(StyledNavLink)`
+  // margin-right: 0.8vw;
+  display: inline-flex;
+  align-items: center;
+
+  &::after {
+    bottom: 0.4vh;
+  }
+`;
+
 
 // ─── Component ───
 const Header = () => {
@@ -325,10 +331,6 @@ const Header = () => {
         <LogoIcon />
         <LogoFont src={logoFont}/>
         </LogoContainer>
-        {/* <ImageNavButton onClick={() => navigate("/")}>
-  <img src={featuresImg} alt="Features" />
-</ImageNavButton> */}
-
       <NavLinks>
         <Link to="/">기능 둘러보기</Link>
         <StyledNavLink
@@ -354,6 +356,9 @@ const Header = () => {
 
       <AuthContainer>
         {userId && (
+          <>
+              <MyPageLink onClick={() => navigate(`/mypage/${userId}`)}>마이페이지</MyPageLink>
+
           <NotificationWrapper>
             <BellIcon onClick={() => setShowNoti(!showNoti)} />
             {unreadNotifications.length > 0 && <Badge>{unreadNotifications.length}</Badge>}
@@ -389,6 +394,7 @@ const Header = () => {
               </NotificationDropdown>
             )}
           </NotificationWrapper>
+          </>
         )}
 
         {userId ? (
