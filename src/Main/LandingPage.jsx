@@ -13,9 +13,9 @@ const AppWrapper = styled.div`
 const LandingPage = () => {
   return (
     <AppWrapper>
-      <SectionOne id="section-1" />
-      <SectionTwo id="section-2"  />
-      <SectionThree id="section-3" />
+        <SectionOne id="section-1" />
+        <SectionTwo id="section-2"  />
+        <SectionThree id="section-3" />
     </AppWrapper>
   );
 };
