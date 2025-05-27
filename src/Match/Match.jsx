@@ -150,7 +150,7 @@ const Match = () => {
   const [currentTempSelection, setCurrentTempSelection] = useState([]);
   const [elapsedTimes, setElapsedTimes] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [highlightUserId, setHighlightUserId] = useState(null);
+  const [highlightName, setHighlightName] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -158,6 +158,8 @@ const Match = () => {
         securedAPI.get(`/api/participant/all?eventId=${eventId}`),
         securedAPI.get(`/api/game/all_games?eventId=${eventId}`)
       ]);
+
+      // 대기자 명단
       const participants = userRes.data.map(user => ({
         id: user.userId,
         userId: user.userId,
@@ -166,18 +168,24 @@ const Match = () => {
         career: user.career,
         lastGamedAt: user.lastGamedAt ? new Date(user.lastGamedAt) : new Date(),
       }));
+      console.log(gameRes.data);
       setWaitingList(participants);
       const map = {};
       participants.forEach(p => { map[p.id] = p; });
       setAllParticipants(map);
+
+      // 게임 목록 (GetGameDto)
       setGameList(gameRes.data);
     } catch (err) {
       console.error("데이터 불러오기 실패:", err);
     }
   }, [eventId]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
+  // 대기자 경과 시간 계산
   useEffect(() => {
     const interval = setInterval(() => {
       const now = new Date();
@@ -193,59 +201,100 @@ const Match = () => {
     return () => clearInterval(interval);
   }, [waitingList]);
 
-  const toggleTempSelection = (id) => {
-    setCurrentTempSelection(prev => (
-      prev.includes(id) ? prev.filter(x => x !== id)
-                        : prev.length < 4 ? [...prev, id] : prev
-    ));
-  };
+const toggleTempSelection = (id) => {
+  setCurrentTempSelection(prev => {
+    const idx = prev.indexOf(id);
+    if (idx !== -1) {
+      return prev.filter(x => x !== id);
+    }
+
+    if (prev.length >= 4) return prev;
+
+    return [...prev, id];
+  });
+};
 
   const getWaitingBorderColor = (id) => {
-    const index = currentTempSelection.indexOf(id);
-    return index !== -1 ? (index < 2 ? "#3b75ff" : "#ff8c00") : "#ccc";
+    const idx = currentTempSelection.indexOf(id);
+    if (idx === -1) return "#ccc";
+    return idx < 2 ? "#3b75ff" : "#ff8c00";
   };
 
   const createGame = async () => {
-    if (currentTempSelection.length !== 4) return alert("4명을 선택해주세요.");
-    const res = await securedAPI.post('/api/game/make', {
-      userIdList: currentTempSelection,
-      eventId,
-      clubId: parseInt(clubId),
-      matchStartTime: new Date().toISOString()
+    if (currentTempSelection.length !== 4) {
+      return alert("4명을 선택해주세요.");
+    }
+    try {
+      await securedAPI.post('/api/game/make', {
+        clubId: parseInt(clubId, 10),
+        eventId: parseInt(eventId, 10),
+        userIdListForTeamOne: currentTempSelection.slice(0, 2),
+        userIdListForTeamTwo: currentTempSelection.slice(2, 4),
+      });
+      setCurrentTempSelection([]);
+      await fetchData();
+    } catch (err) {
+      console.error("게임 생성 실패:", err);
+    }
+  };
+
+  const startGame = async (gameId) => {
+    try {
+      await securedAPI.post(`/api/game/start?gameId=${gameId}`);
+      await fetchData();
+    } catch (err) {
+      console.error("게임 시작 실패:", err);
+    }
+  };
+
+const completeGame = async (gameId, teamOneScore, teamTwoScore, teamOneId, teamTwoId) => {
+  try {
+    await securedAPI.post('/api/game/end', {
+      gameId,
+      teamOneId,
+      teamTwoId,
+      teamOneScore,
+      teamTwoScore
     });
-    setGameList(prev => [...prev, res.data]);
-    setCurrentTempSelection([]);
-  };
-
-  const startGame = async (gameId, userIdList) => {
-    await securedAPI.post('/api/game/start', { gameId: String(gameId), userIdList });
-    setGameList(prev => prev.map(g =>
-      g.gameId === gameId ? { ...g, status: 'PLAYING', startAt: new Date() } : g
-    ));
-  };
-
-  const completeGame = async (gameId, score1, score2) => {
-    await securedAPI.post(`/api/game/end?gameId=${gameId}&score1=${score1}&score2=${score2}`);
     await fetchData();
-  };
+  } catch (err) {
+    console.error("게임 종료 실패:", err);
+  }
+};
+
 
   const deleteGame = async (gameId) => {
-    await securedAPI.delete(`/api/game/delete?gameId=${gameId}`);
-    setGameList(prev => prev.filter(g => g.gameId !== gameId));
+    try {
+      await securedAPI.delete(`/api/game/delete?gameId=${gameId}`);
+      setGameList(prev => prev.filter(g => g.gameId !== gameId));
+    } catch (err) {
+      console.error("게임 삭제 실패:", err);
+    }
   };
 
   const handleScoreChange = (gameId, teamIndex, value) => {
-    setGameList(prev => prev.map(g => {
-      if (g.gameId !== gameId) return g;
-      const scores = (g.score || "0:0").split(":").map(Number);
-      scores[teamIndex] = Number(value);
-      return { ...g, score: `${scores[0]}:${scores[1]}` };
-    }));
+    setGameList(prev =>
+      prev.map(g => {
+        if (g.gameId !== gameId) return g;
+        if (teamIndex === 0) {
+          return { ...g, teamOneScore: Number(value) };
+        } else {
+          return { ...g, teamTwoScore: Number(value) };
+        }
+      })
+    );
   };
 
-  const getElapsedTime = (startAt) => {
+  const getStatus = (game) => {
+    if (!game.joinedAt) return 'WAITING';
+    if (!game.finishedAt) return 'PLAYING';
+    return 'DONE';
+  };
+
+  const getElapsedTime = (startedAt) => {
+    if (!startedAt) return '';
     const now = new Date();
-    const seconds = Math.floor((now - new Date(startAt)) / 1000);
+    const seconds = Math.floor((now - new Date(startedAt)) / 1000);
     return `${Math.floor(seconds / 60)}분 ${seconds % 60}초`;
   };
 
@@ -258,7 +307,11 @@ const Match = () => {
         </SectionTitleRow>
         <FlexWrap>
           {waitingList.map(user => (
-            <Card key={user.id} onClick={() => toggleTempSelection(user.id)} borderColor={getWaitingBorderColor(user.id)}>
+            <Card
+              key={user.id}
+              onClick={() => toggleTempSelection(user.id)}
+              borderColor={getWaitingBorderColor(user.id)}
+            >
               <div>{user.name}</div>
               <TimeText>{elapsedTimes[user.id]}</TimeText>
               <TimeText>{user.gender} / {user.career}년차</TimeText>
@@ -274,77 +327,92 @@ const Match = () => {
         <Title>게임 목록</Title>
         <GameGrid>
           {gameList.map(game => {
-            const isHighlighted = highlightUserId && game.userIdList.includes(highlightUserId);
-            const [teamA, teamB] = [game.userIdList.slice(0, 2), game.userIdList.slice(2, 4)];
+            const status = getStatus(game);
+            const isHighlighted = highlightName && game.userNames.includes(highlightName);
+            const teamA = game.userNames.slice(0, 2);
+            const teamB = game.userNames.slice(2, 4);
+
             return (
               <GameCard key={game.gameId} $highlighted={isHighlighted}>
-                    {(game.status === 'WAITING' || game.status === 'PLAYING') && (
-                      <DeleteButton onClick={() => deleteGame(game.gameId)}>×</DeleteButton>
-                    )}
-                  <TeamWrapper>
-                    <TeamColumn>
-                      {teamA.map((id, idx) => (
-                        <UserNameClickable
-                          key={idx}
-                          onClick={() => setHighlightUserId(prev => prev === id ? null : id)}
-                          $highlighted={highlightUserId === id}
-                        >
-                          {allParticipants[id] ? allParticipants[id].name : id}
-                        </UserNameClickable>
-                      ))}
-                    </TeamColumn>
+                {(status === 'WAITING' || status === 'PLAYING') && (
+                  <DeleteButton onClick={() => deleteGame(game.gameId)}>×</DeleteButton>
+                )}
 
-                    <Divider />
+                <TeamWrapper>
+                  <TeamColumn>
+                    {teamA.map((name, idx) => (
+                      <UserNameClickable
+                        key={idx}
+                        onClick={() => setHighlightName(prev => prev === name ? null : name)}
+                        $highlighted={highlightName === name}
+                      >
+                        {name}
+                      </UserNameClickable>
+                    ))}
+                  </TeamColumn>
 
-                    <TeamColumn>
-                      {teamB.map((id, idx) => (
-                        <UserNameClickable
-                          key={idx}
-                          onClick={() => setHighlightUserId(prev => prev === id ? null : id)}
-                          $highlighted={highlightUserId === id}
-                        >
-                          {allParticipants[id] ? allParticipants[id].name : id}
-                        </UserNameClickable>
-                      ))}
-                    </TeamColumn>
-                  </TeamWrapper>
+                  <Divider />
+
+                  <TeamColumn>
+                    {teamB.map((name, idx) => (
+                      <UserNameClickable
+                        key={idx}
+                        onClick={() => setHighlightName(prev => prev === name ? null : name)}
+                        $highlighted={highlightName === name}
+                      >
+                        {name}
+                      </UserNameClickable>
+                    ))}
+                  </TeamColumn>
+                </TeamWrapper>
 
                 <GameFooter>
                   <ScoreBox>
-                    {game.status === 'PLAYING' ? (
+                    {status === 'PLAYING' ? (
                       <>
                         <ScoreField
                           type="number"
-                          value={(game.score || "0:0").split(":")[0]}
-                          onChange={(e) => handleScoreChange(game.gameId, 0, e.target.value)}
+                          value={game.teamOneScore ?? 0}
+                          onChange={e => handleScoreChange(game.gameId, 0, e.target.value)}
                         />
                         :
                         <ScoreField
                           type="number"
-                          value={(game.score || "0:0").split(":")[1]}
-                          onChange={(e) => handleScoreChange(game.gameId, 1, e.target.value)}
+                          value={game.teamTwoScore ?? 0}
+                          onChange={e => handleScoreChange(game.gameId, 1, e.target.value)}
                         />
                       </>
                     ) : (
-                      <span>{game.score || "0 : 0"}</span>
+                      <span>
+                        {(game.teamOneScore ?? 0)} : {(game.teamTwoScore ?? 0)}
+                      </span>
                     )}
                   </ScoreBox>
 
-                  {game.status === 'WAITING' && (
-                    <Button onClick={() => startGame(game.gameId, game.userIdList)}>시작</Button>
+                  {status === 'WAITING' && (
+                    <Button onClick={() => startGame(game.gameId)}>시작</Button>
                   )}
-                  {game.status === 'PLAYING' && (
+                  {status === 'PLAYING' && (
                     <>
-                      <div style={{ fontSize: '0.85rem', color: '#5fbd7b' }}>{getElapsedTime(game.startAt)}</div>
-                      <Button onClick={() => {
-                        const [s1, s2] = (game.score || "0:0").split(":");
-                        completeGame(game.gameId, s1, s2);
-                      }}>완료</Button>
+                      <div style={{ fontSize: '0.85rem', color: '#5fbd7b' }}>
+                        {getElapsedTime(game.joinedAt)}
+                      </div>
+                    <Button onClick={() => completeGame(
+                      game.gameId,
+                      game.teamOneScore ?? 0,
+                      game.teamTwoScore ?? 0,
+                      game.teamOneId,
+                      game.teamTwoId
+                    )}>
+                      완료
+                    </Button>
                     </>
-                  )} 
-                   {game.status === 'DONE' && (
-                      <div style={{ height: '1px', visibility: 'hidden' }} />
-                    )}                
+                  )}
+                  {status === 'DONE' && (
+                    <div style={{ fontSize: '0.85rem', color: '#999' }}>
+                      완료: {new Date(game.finishedAt).toLocaleTimeString()}
+                    </div>
+                  )}
                 </GameFooter>
               </GameCard>
             );
