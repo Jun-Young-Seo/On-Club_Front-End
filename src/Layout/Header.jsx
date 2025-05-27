@@ -365,7 +365,7 @@ const Header = () => {
         <LogoFont src={logoFont}/>
         </LogoContainer>
       <NavLinks>
-        <Link to="/">기능 둘러보기</Link>
+        <Link to="/tour">기능 둘러보기</Link>
         <StyledNavLink
           onClick={() => {
             if (!userId) {
@@ -383,8 +383,6 @@ const Header = () => {
           클럽 만들기
       </StyledNavLink>
         <Link to="/clubs">클럽 찾기</Link>
-        {/* <Link to="/gallery">Gallery</Link>
-        <Link to="/team">Team</Link> */}
       </NavLinks>
 
       <AuthContainer>

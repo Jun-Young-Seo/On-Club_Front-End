@@ -1,5 +1,3 @@
-// ✅ 수정 목적: Chart.js 차트 3개 (Pie, Bar, Bar) 정상 렌더링 + 콘솔 무한 경고 해결 + 로딩 메시지 복구 + Bar 두께 조절 + 카테고리 영역 간격 축소
-
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Bar, Pie } from "react-chartjs-2";
@@ -39,6 +37,42 @@ const CardWrapper = styled.div`
   align-items: center;
 `;
 
+const MemberCard = styled.div`
+  background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);  // 강조된 그림자
+`;
+
+const InfoRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8rem;
+  line-height:3rem;
+  font-family: "Segoe UI", "Pretendard", "Noto Sans KR", sans-serif;
+`;
+
+const Label = styled.div`
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 0.95rem;
+  white-space: nowrap;
+`;
+
+const Value = styled.div`
+  color: #4b5563;
+  font-size: 1rem;
+  text-align: right;
+  flex: 1;
+  word-break: break-word;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+`;
 const ChartTitle = styled.div`
   display: inline-flex;
   align-items: center;
@@ -54,7 +88,12 @@ const ChartTitle = styled.div`
   margin-bottom: 1.5rem;
   font-family: "Segoe UI", "Pretendard", "Noto Sans KR", sans-serif;
 `;
-
+const ChartEmoji = styled.div`
+  font-size: 2.2rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+`;
 const Card = styled.div`
   background: #fff;
   padding: 1.5rem;
@@ -106,7 +145,8 @@ const MemberReportPage = ({activeTab}) => {
   const [howManyEventsBetweenOneMonth, setHowManyEventsBetweenOneMonth] = useState(0);
   const [maleMembers, setMaleMembers] = useState(0);
   const [femaleMembers, setFemaleMembers] = useState(0);
-
+  const [mostAttendantMember, setMostAttendantMember] = useState([]);
+  const [mostManyGamesMember, setMostManyGamesMember] = useState([]);
   useEffect(() => {
 
   const messageTimer = setInterval(() => {
@@ -140,6 +180,8 @@ useEffect(() => {
       setHowManyEventsBetweenOneMonth(data.howManyEventsBetweenOneMonth);
       setMaleMembers(data.maleMembers);
       setFemaleMembers(data.femaleMembers);
+      setMostAttendantMember(data.mostAttendantMember);
+      setMostManyGamesMember(data.mostManyGamesMember);
       setGptMarkDown(gptRes.data);
     } catch (err) {
       console.error(err);
@@ -235,8 +277,110 @@ useEffect(() => {
         </CardWrapper>
       </Grid>
 
+      <Grid>
+        <CardWrapper>
+          <ChartTitle>
+            <ChartEmoji>🏆</ChartEmoji>
+            이벤트 최다 참석자
+          </ChartTitle>
+            <MemberCard>
+                <InfoRow>
+                    <Label>👤 이름</Label>
+                    <Value>{mostManyGamesMember.userName}</Value>
+                </InfoRow>
+                <InfoRow>
+                    <Label>📞 전화번호</Label>
+                    <Value>{mostManyGamesMember.userTel}</Value>
+                </InfoRow>
+                <InfoRow>
+                    <Label>📍 지역</Label>
+                    <Value>{mostManyGamesMember.region}</Value>
+                </InfoRow>
+                <InfoRow>
+                    <Label>🚻 성별</Label>
+                    <Value>{mostManyGamesMember.gender === "FEMALE" ? "여성" : "남성"}</Value>
+                </InfoRow>
+                <InfoRow>
+                    <Label>🎂 생년월일</Label>
+                    <Value>{mostManyGamesMember.birthDate}</Value>
+                </InfoRow>
+                <InfoRow>
+                    <Label>🎾 구력</Label>
+                    <Value>{mostManyGamesMember.career}년</Value>
+                </InfoRow>
+            </MemberCard>
+        </CardWrapper>
+        
+        <CardWrapper>
+          <ChartTitle>
+            <ChartEmoji>🥇</ChartEmoji>
+            게임 최다 참가자
+          </ChartTitle>
+            <MemberCard>
+            <InfoRow>
+                <Label>👤 이름</Label>
+                <Value>{mostManyGamesMember.userName}</Value>
+            </InfoRow>
+            <InfoRow>
+                <Label>📞 전화번호</Label>
+                <Value>{mostManyGamesMember.userTel}</Value>
+            </InfoRow>
+            <InfoRow>
+                <Label>📍 지역</Label>
+                <Value>{mostManyGamesMember.region}</Value>
+            </InfoRow>
+            <InfoRow>
+                <Label>🚻 성별</Label>
+                <Value>{mostManyGamesMember.gender === "FEMALE" ? "여성" : "남성"}</Value>
+            </InfoRow>
+            <InfoRow>
+                <Label>🎂 생년월일</Label>
+                <Value>{mostManyGamesMember.birthDate}</Value>
+                            </InfoRow>
+            <InfoRow>
+                <Label>🎾 구력</Label>
+                <Value>{mostManyGamesMember.career}년</Value>
+            </InfoRow>
+            </MemberCard>
+        </CardWrapper>
+
+
+        <CardWrapper>
+          <ChartTitle>
+            <ChartEmoji>🥇</ChartEmoji>
+            이 달의 득점왕
+          </ChartTitle>
+            <MemberCard>
+            <InfoRow>
+                <Label>👤 이름</Label>
+                <Value>{mostManyGamesMember.userName}</Value>
+            </InfoRow>
+            <InfoRow>
+                <Label>📞 전화번호</Label>
+                <Value>{mostManyGamesMember.userTel}</Value>
+            </InfoRow>
+            <InfoRow>
+                <Label>📍 지역</Label>
+                <Value>{mostManyGamesMember.region}</Value>
+            </InfoRow>
+            <InfoRow>
+                <Label>🚻 성별</Label>
+                <Value>{mostManyGamesMember.gender === "FEMALE" ? "여성" : "남성"}</Value>
+            </InfoRow>
+            <InfoRow>
+                <Label>🎂 생년월일</Label>
+                <Value>{mostManyGamesMember.birthDate}</Value>
+                            </InfoRow>
+            <InfoRow>
+                <Label>🎾 구력</Label>
+                <Value>{mostManyGamesMember.career}년</Value>
+            </InfoRow>
+            </MemberCard>
+        </CardWrapper>
+
+      </Grid>
       <CardWrapper>
-        <ChartTitle>💡 GPT 인사이트 보고서</ChartTitle>
+        <ChartTitle>💡 AI 회원관리 보고서</ChartTitle>
         <MarkdownBox>
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{gptMarkDown}</ReactMarkdown>
         </MarkdownBox>
