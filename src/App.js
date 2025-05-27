@@ -28,6 +28,7 @@ import AccountSetupPage from "./Club/Budget/AccountSetupPage";
 import BudgetReportPage from "./Club/Report/BudgetReportPage";
 
 import MyPage from "./User/MyPage";
+import Tourpage from "./tour/TourPage";
 const App = () => {
   return (
     <NotificationProvider>  
@@ -38,6 +39,7 @@ const App = () => {
         <Route path="/" element={<LandingPage/>}/>
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/tour" element={<Tourpage/>}/>
 
         {/* 클럽 리스트는 단독 페이지 */}
         <Route path="/clubs" element={<ClubListPage />} />

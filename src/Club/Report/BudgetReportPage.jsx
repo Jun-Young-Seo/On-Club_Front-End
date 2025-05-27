@@ -348,7 +348,7 @@ return (
                 <CardWrapper>
                 <ChartTitle>
                     <ChartEmoji>💡</ChartEmoji>
-                    GPT 인사이트 보고서
+                    AI 예산관리 보고서
                 </ChartTitle>
                 <ReportBox>
                     <MarkdownBox>
