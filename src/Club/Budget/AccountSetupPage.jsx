@@ -3,13 +3,14 @@ import styled from "styled-components";
 import Slider from "react-slick";
 import dashboardImage from "../../assets/images/budget_dashboard.svg";
 import dashboardImage_2 from "../../assets/images/budget_dashboard_2.svg";
+
 import { useParams } from "react-router-dom";
 import { useState } from "react";
 import AccountSetupModal from "./AccountSetupModal";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-const images = [dashboardImage, dashboardImage_2, dashboardImage];
+const images = [dashboardImage, dashboardImage_2];
 
 const PageWrapper = styled.div`
   display: flex;
@@ -151,6 +152,8 @@ const AccountSetupPage = () => {
           <InstructionItem>월별 수입·지출 내역을 한눈에 확인할 수 있는 대시보드</InstructionItem>
           <InstructionItem>각 거래 내역을 손쉽게 추가하고 수정할 수 있어요</InstructionItem>
           <InstructionItem>엑셀 파일로 거래 내역을 한번에 업로드할 수 있어요</InstructionItem>
+          <InstructionItem>월 단위로 예산 관리에 대한 AI 보고서도 받아볼 수 있어요</InstructionItem>
+
         </InstructionList>
         <CTAButton onClick={() => setShowModal(true)}>
             메인 계좌 지정하고 시작하기
@@ -159,7 +162,7 @@ const AccountSetupPage = () => {
       {showModal && <AccountSetupModal clubId={clubId} onClose={() => setShowModal(false)} />}
 
     </PageWrapper>
-  );
+  );    
 };
 
 export default AccountSetupPage;

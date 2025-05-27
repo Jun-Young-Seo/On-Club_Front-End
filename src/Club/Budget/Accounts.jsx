@@ -58,6 +58,14 @@ const CardNumber = styled.div`
   font-weight: bold;
 `;
 
+  
+const formatAccountNumber = (raw) => {
+  const str = String(raw); 
+  if (str.length !== 13) return raw;
+  return `${str.slice(0, 4)}-${str.slice(4, 6)}-${str.slice(6)}`;
+};
+
+
 
 const Accounts = ({ onSelectAccount }) => {
   const [accounts, setAccounts] = useState([]);
@@ -95,9 +103,9 @@ const Accounts = ({ onSelectAccount }) => {
           <BankLogo src={kakaoBankLogoSvg} alt="KakaoBank Logo" />
           <div>
             <BankName>{account.bankName}</BankName>
-            <AccountName>{account.accountName}</AccountName> {/* ✅ 추가된 계좌명 */}
+            <AccountName>{account.accountName}</AccountName>
           </div>
-          <CardNumber>계좌번호 {account.accountNumber}</CardNumber>
+          <CardNumber>계좌번호 {formatAccountNumber(account.accountNumber)}</CardNumber>
         </AccountCard>
       ))}
     </AccountList>

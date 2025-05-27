@@ -238,9 +238,7 @@ const Dashboard = () => {
     const fetchBudgetInfo = async () => {
       try {
         const response = await securedAPI.get(`/api/budget/get/budget-info?clubId=${clubId}`);
-        console.log(response);
         setBudgetInfo(response.data);
-        console.log("✅ 대시보드 데이터:", response.data);
       }
         catch (error) {
           if (error.response && error.response.status === 404) {
@@ -283,6 +281,12 @@ const Dashboard = () => {
 
     fetchBudgetInfo();
   }, [clubId]);
+
+  const formatAccountNumber = (raw) => {
+  const str = String(raw); 
+  if (str.length !== 13) return raw;
+  return `${str.slice(0, 4)}-${str.slice(4, 6)}-${str.slice(6)}`;
+};
 
   return (
     <Container>
@@ -347,9 +351,10 @@ const Dashboard = () => {
           <ColoredCell $type={tx.transactionType}>{tx.transactionType}</ColoredCell>
           <LightCell>{tx.transactionDetail}</LightCell>
           <LightCell>{tx.transactionMemo}</LightCell>
-          <LightCell>{tx.transactionBalance}원</LightCell>
+          <LightCell>{tx.transactionBalance.toLocaleString()}원</LightCell>
           <AmountCell $positive={tx.transactionAmount > 0}>
-            {tx.transactionAmount > 0 ? "+" : "-"}{Math.abs(tx.transactionAmount)}원
+            {tx.transactionAmount > 0 ? "+" : "-"}
+            {Math.abs(tx.transactionAmount).toLocaleString()}원
           </AmountCell>
         </TransactionRow>
       ))}
@@ -365,7 +370,7 @@ const Dashboard = () => {
         <BankName>{account.accountName}</BankName>
         <AccountName>{account.accountOwner}</AccountName>
       </div>
-      <CardNumber>{account.accountNumber}</CardNumber>
+      <CardNumber>  {formatAccountNumber(account.accountNumber)} </CardNumber>
     </AccountCard>
         {showAccountModal && (
       <ModifyClubMainAccountModal
