@@ -103,14 +103,14 @@ const Sidebar = () => {
           홈
         </MenuItem>
 
-        <MenuItem active={activeItem === "members"} onClick={() => handleNavigation("members", `/clubs/${clubId}/membership_detail`,["MANAGER", "LEADER"])}>
-          <FaPeopleGroup size="1.5vw" />
-          회원관리
-        </MenuItem>
-
         <MenuItem active={activeItem === "budget"} onClick={() => handleNavigation("budget",`/clubs/${clubId}/budget_dashboard`,["MANAGER", "LEADER"])}>
           <PiMoney size="1.5vw" />
           예산관리
+        </MenuItem>
+
+        <MenuItem active={activeItem === "members"} onClick={() => handleNavigation("members", `/clubs/${clubId}/membership_detail`,["MANAGER", "LEADER"])}>
+          <FaPeopleGroup size="1.5vw" />
+          회원관리
         </MenuItem>
 
         <MenuItem active ={activeItem === 'event'} onClick={() => handleNavigation("event",`/clubs/${clubId}/event`,["MANAGER", "LEADER"])}>
