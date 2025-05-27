@@ -160,6 +160,14 @@ const ModifyClubMainAccountModal = ({ clubId, onClose }) => {
       Swal.fire("오류", "계좌 변경 중 문제가 발생했습니다.", "error");
     }
   };
+  
+const formatAccountNumber = (raw) => {
+  const str = String(raw); 
+  if (str.length !== 13) return raw;
+  return `${str.slice(0, 4)}-${str.slice(4, 6)}-${str.slice(6)}`;
+};
+
+
 
   return (
     <Overlay>
@@ -175,7 +183,7 @@ const ModifyClubMainAccountModal = ({ clubId, onClose }) => {
           >
                 <BankImage src={kakaoBankLogoSvg} alt="Bank Logo" />
                 <AccountName>{acc.accountName}</AccountName>
-                <AccountInfo>{acc.accountNumber}</AccountInfo>
+                <AccountInfo>{formatAccountNumber(acc.accountNumber)}</AccountInfo>
                 <AccountInfo>예금주: {acc.accountOwner}</AccountInfo>
           </AccountCard>
         ))}

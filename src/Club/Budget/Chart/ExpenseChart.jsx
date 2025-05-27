@@ -3,6 +3,7 @@ import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import styled from 'styled-components';
 import { FiInbox } from 'react-icons/fi'; // feather icon 예시
+import { COLOR_PALETTE } from '../../../Constants/Default';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 const NoDataBox = styled.div`
@@ -22,6 +23,7 @@ const NoDataBox = styled.div`
 const ExpenseChart = ({ expenseData }) => {
   const labels = expenseData.map(item => item.transactionDetail);
   const dataValues = expenseData.map(item => item.totalAmount);
+  const colorOffset = 1;
 
   const chartData = {
     labels,
@@ -29,9 +31,7 @@ const ExpenseChart = ({ expenseData }) => {
       {
         label: '출금 금액',
         data: dataValues,
-        backgroundColor: [
-          '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
-        ],
+        backgroundColor: labels.map((_, i) => COLOR_PALETTE[(i + colorOffset) % COLOR_PALETTE.length]),
         hoverOffset: 4,
       },
     ],

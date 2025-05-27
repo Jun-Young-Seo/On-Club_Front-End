@@ -8,7 +8,7 @@ export const DEFAULT_IMAGES = [
   export const DEFAULT_BACKGROUND_COLORS = ["#FFFFFF", "#C7E508"];
   
   export const COLOR_PALETTE = [
-  "#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#3b82f6",
+  "#0ea5e9", "#ef4444" ,"#10b981", "#f59e0b", "#3b82f6",
   "#a855f7", "#14b8a6", "#eab308", "#8b5cf6", "#ec4899",
   "#22c55e", "#f97316", "#0ea5e9", "#e11d48", "#7c3aed"
 ];
