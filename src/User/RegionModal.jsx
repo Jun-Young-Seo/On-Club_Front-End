@@ -40,12 +40,12 @@ const Button = styled.button`
   margin-top: 10px;
   padding: 10px;
   border: none;
-  background: #27ae60;
+  background: #4947FF;
   color: white;
   border-radius: 5px;
   cursor: pointer;
   &:hover {
-    background: #27ae60;
+    background: #8271FF;
   }
 `;
 

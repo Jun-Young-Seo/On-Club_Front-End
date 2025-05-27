@@ -298,17 +298,7 @@ const Dashboard = () => {
             </CardHeader>
         </Card>
 
-          <Card onClick={()=> navigate(`/clubs/${clubId}/budget_detail`)}>
-              <CardHeader>
-                  <img src={incomeIcon} alt="수입 아이콘" />
-                  <div>
-                      <CardTitle>수입</CardTitle>
-                      <CardValue>{budgetInfo.monthlyIncome.toLocaleString('ko-KR')}원</CardValue>
-                  </div>
-              </CardHeader>
-          </Card>
-
-          <Card onClick={()=> navigate(`/clubs/${clubId}/budget_detail`)}>
+        <Card onClick={()=> navigate(`/clubs/${clubId}/budget_detail`)}>
             <CardHeader>
                 <img src={expenseIcon} alt="지출 아이콘" />
             <div>
@@ -318,7 +308,17 @@ const Dashboard = () => {
             </CardHeader>
         </Card>
 
-          <Card onClick={()=> navigate(`/clubs/${clubId}/budget_detail`)}>
+        <Card onClick={()=> navigate(`/clubs/${clubId}/budget_detail`)}>
+            <CardHeader>
+                <img src={incomeIcon} alt="수입 아이콘" />
+            <div>
+                <CardTitle>수입</CardTitle>
+                <CardValue>{budgetInfo.monthlyIncome.toLocaleString('ko-KR')}원</CardValue>
+            </div>
+            </CardHeader>
+        </Card>
+
+        <Card onClick={()=> navigate(`/clubs/${clubId}/budget_detail`)}>
             <CardHeader>
                 <img src={savingIcon} alt="수입 아이콘" />
             <div>
