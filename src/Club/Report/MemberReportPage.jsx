@@ -172,7 +172,7 @@ useEffect(() => {
     setIsLoading(true);
     const today = new Date();
     const year = today.getFullYear();
-    const month = today.getMonth() + 2;
+    const month = today.getMonth() + 1;
     try {
       const [memberRes, gptRes] = await Promise.all([
         securedAPI.get(`/api/report/member/data?clubId=${clubId}&year=${year}&month=${month}`),
@@ -310,7 +310,7 @@ const handleCardClick = (member, category, index) => {
   let titleText = `${member.userName}님의 정보`;
     const today = new Date();
     const year = today.getFullYear();
-    const month = today.getMonth() + 2;
+    const month = today.getMonth() + 1;
 
 if (category === "event") {
   titleText = `
