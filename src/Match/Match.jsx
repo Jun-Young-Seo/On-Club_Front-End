@@ -152,32 +152,41 @@ const Match = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [highlightName, setHighlightName] = useState(null);
 
-const fetchData = useCallback(async () => {
-  try {
-    // 1) 참가자부터
-    const userRes = await securedAPI.get(`/api/participant/all?eventId=${eventId}`);
-    const participants = userRes.data.map(/* ... */);
-    setWaitingList(participants);
-    const map = {};
-    participants.forEach(p => { map[p.id] = p; });
-    setAllParticipants(map);
-  } catch (err) {
-    console.error("대기자 불러오기 실패:", err);
-  }
+  const fetchData = useCallback(async () => {
+    try {
+      const [userRes, gameRes] = await Promise.all([
+        securedAPI.get(`/api/participant/all?eventId=${eventId}`),
+        securedAPI.get(`/api/game/all_games?eventId=${eventId}`)
+      ]);
 
-  try {
-    // 2) 게임 목록
-    const gameRes = await securedAPI.get(`/api/game/all_games?eventId=${eventId}`);
-    setGameList(gameRes.data);
-  } catch (err) {
-    if (err.response?.status === 404) {
-      // 팀이 없을 땐 빈 배열로 처리
-      setGameList([]);
-    } else {
-      console.error("게임 목록 불러오기 실패:", err);
+      // 대기자 명단
+      const participants = userRes.data.map(user => ({
+        id: user.userId,
+        userId: user.userId,
+        name: user.userName,
+        gender: user.gender === 'FEMALE' ? '여자' : '남자',
+        career: user.career,
+        gameCount: user.gameCount ?? 0,
+        lastGamedAt: user.lastGamedAt ? new Date(user.lastGamedAt) : null, 
+      }));
+
+      console.log(userRes.data);
+      console.log(gameRes.data);
+      setWaitingList(participants);
+      const map = {};
+      participants.forEach(p => { map[p.id] = p; });
+      setAllParticipants(map);
+
+      // 게임 목록 (GetGameDto)
+      setGameList(gameRes.data);
+    } catch (err) {
+      console.error("데이터 불러오기 실패:", err);
     }
-  }
-}, [eventId]);
+  }, [eventId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   // 대기자 경과 시간 계산
   useEffect(() => {
@@ -329,7 +338,7 @@ const getElapsedTime = (startedAt) => {
               <div>{user.name}</div>
               <TimeText>{elapsedTimes[user.id]}</TimeText>
               <TimeText>{user.gender} / {user.career}년차</TimeText>
-              <TimeText>경기 수: {user.gameCount}회</TimeText>
+              <TimeText>경기 수: {user.gameCount}회</TimeText> {/* 추가 */}
             </Card>
           ))}
         </FlexWrap>
