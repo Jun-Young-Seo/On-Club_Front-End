@@ -16,6 +16,10 @@ import { HashLoader } from "react-spinners";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { LOADING_MEMBER_MESSAGES } from "../../Constants/Default";
+import Swal from "sweetalert2";
+import goldImage from "../../assets/images/Gold.svg";
+import silverImage from "../../assets/images/Silver.svg";
+import bronzeImage from "../../assets/images/Bronze.svg";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 
@@ -36,43 +40,45 @@ const CardWrapper = styled.div`
   flex-direction: column;
   align-items: center;
 `;
-
 const MemberCard = styled.div`
   background-color: #ffffff;
-  border-radius: 1rem;
-  padding: 1.5rem;
+  border-radius: 0.8rem;
+  padding: 0.8rem 1.2rem;
   display: flex;
-  flex-direction: column;
-
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);  // 강조된 그림자
-`;
-
-const InfoRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8rem;
-  line-height:3rem;
-  font-family: "Segoe UI", "Pretendard", "Noto Sans KR", sans-serif;
-`;
-
-const Label = styled.div`
-  font-weight: 600;
-  color: #1f2937;
-  font-size: 0.95rem;
-  white-space: nowrap;
-`;
-
-const Value = styled.div`
-  color: #4b5563;
-  font-size: 1rem;
-  text-align: right;
-  flex: 1;
-  word-break: break-word;
   align-items: center;
-  justify-content: center;
-  z-index: 9999;
+  justify-content: space-between;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  width: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  margin-bottom : 1.2rem;
+  &:hover {
+    background-color: #f9fafb;
+  }
 `;
+
+const NameRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+`;
+
+const Medal = styled.div`
+  font-size: 1.5rem;
+`;
+
+const Name = styled.div`
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+`;
+
+const SubInfo = styled.div`
+  font-size: 0.9rem;
+  color: #6b7280;
+`;
+
 const ChartTitle = styled.div`
   display: inline-flex;
   align-items: center;
@@ -121,7 +127,6 @@ const SpinnerOverlay = styled.div`
   z-index: 9999;
 `;
 
-
 const MarkdownBox = styled.div`
   padding: 2rem;
   border-radius: 1rem;
@@ -147,6 +152,7 @@ const MemberReportPage = ({activeTab}) => {
   const [femaleMembers, setFemaleMembers] = useState(0);
   const [mostAttendantMember, setMostAttendantMember] = useState([]);
   const [mostManyGamesMember, setMostManyGamesMember] = useState([]);
+  const [mostWinnerMember, setMostWinnerMember] = useState([]);
   useEffect(() => {
 
   const messageTimer = setInterval(() => {
@@ -173,6 +179,7 @@ useEffect(() => {
         securedAPI.get(`/api/report/member/analyze?clubId=${clubId}&year=${year}&month=${month}`)
       ]);
       const data = memberRes.data;
+      console.log(data);
       setHowManyMembers(data.howManyMembers);
       setHowManyMembersBetweenOneMonth(data.howManyMembersBetweenOneMonth);
       setHowManyAccumulatedGuests(data.howManyAccumulatedGuests);
@@ -180,8 +187,9 @@ useEffect(() => {
       setHowManyEventsBetweenOneMonth(data.howManyEventsBetweenOneMonth);
       setMaleMembers(data.maleMembers);
       setFemaleMembers(data.femaleMembers);
-      setMostAttendantMember(data.mostAttendantMember);
-      setMostManyGamesMember(data.mostManyGamesMember);
+      setMostAttendantMember(data.mostAttendantMember || []);
+      setMostManyGamesMember(data.mostManyGamesMember || []);
+      setMostWinnerMember(data.mostWinnerMember || []);
       setGptMarkDown(gptRes.data);
     } catch (err) {
       console.error(err);
@@ -233,6 +241,126 @@ useEffect(() => {
       }
     }
   };
+const medalEmojis = ["🥇", "🥈", "🥉"];
+
+const getMedalImage = (index) => {
+  if (index === 0) return goldImage;
+  if (index === 1) return silverImage;
+  if (index === 2) return bronzeImage;
+  return null;
+};
+
+const injectSwalStyleOnce = () => {
+  if (document.getElementById("swal-style")) return;
+
+  const style = document.createElement("style");
+  style.id = "swal-style";
+  style.textContent = `
+    .swal2-popup {
+      border-radius: 20px;
+      border: 2.5px solid #4b5563;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+      padding: 2.4rem;
+      background-color: #ffffff;
+    }
+
+    .swal2-title {
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 1.2rem;
+    }
+
+    .swal2-confirm {
+      background: linear-gradient(to right, #3b82f6, #2563eb) !important;
+      color: white !important;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 0.7rem 1.6rem;
+      font-size: 1rem;
+      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .swal2-confirm:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.5);
+    }
+
+    .custom-swal-content {
+      font-size: 1.2rem;
+      color: #374151;
+      line-height: 1.8;
+      text-align: center;
+    }
+
+    .swal2-image {
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    }
+  `;
+  document.head.appendChild(style);
+};
+
+const handleCardClick = (member, category, index) => {
+  injectSwalStyleOnce(); // 항상 먼저 실행
+
+  const rank = index + 1;
+  let extraInfo = "";
+  let titleText = `${member.userName}님의 정보`;
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+
+if (category === "event") {
+  titleText = `
+    <div style="font-size: 1.3rem; color: #374151; font-weight: 500; margin-bottom: 0.2rem;">
+      ${month}월 모임 참석왕 ${rank}위
+    </div>
+    <div style="font-size: 1.8rem; font-weight: 700; color: #1f2937;">
+      ${member.userName}
+    </div>
+  `;
+  extraInfo = `✅ 참석: ${member.attendanceCount}회`;
+
+} else if (category === "game") {
+  titleText = `
+    <div style="font-size: 1.3rem; color: #374151; font-weight: 500; margin-bottom: 0.2rem;">
+      ${month}월 게임 참가왕 ${rank}위
+    </div>
+    <div style="font-size: 1.8rem; font-weight: 700; color: #1f2937;">
+      ${member.userName}
+    </div>
+  `;
+  extraInfo = `🎮 게임: ${member.totalGames}회`;
+
+} else if (category === "score") {
+  titleText = `
+    <div style="font-size: 1.3rem; color: #374151; font-weight: 500; margin-bottom: 0.2rem;">
+      ${month}월 득점왕 ${rank}위
+    </div>
+    <div style="font-size: 1.8rem; font-weight: 700; color: #1f2937;">
+      ${member.userName}
+    </div>
+  `;
+  extraInfo = `🔥 득점: ${member.totalScore}점`;
+}
+
+  Swal.fire({
+    title: titleText,
+    html: `
+      <div class="custom-swal-content">
+        ${extraInfo}<br/>
+        📞 ${member.userTel}<br/>
+        🚻 ${member.gender === "FEMALE" ? "여성" : "남성"} / 🎾 ${member.career}년
+      </div>
+    `,
+    imageUrl: getMedalImage(index),
+    imageWidth: 120,
+    imageHeight: 120,
+    confirmButtonText: "닫기",
+  });
+};
 
   return (
     <PageWrapper>
@@ -279,106 +407,52 @@ useEffect(() => {
 
       <Grid>
         <CardWrapper>
-          <ChartTitle>
+        <ChartTitle>
             <ChartEmoji>🏆</ChartEmoji>
             이벤트 최다 참석자
-          </ChartTitle>
-            <MemberCard>
-                <InfoRow>
-                    <Label>👤 이름</Label>
-                    <Value>{mostManyGamesMember.userName}</Value>
-                </InfoRow>
-                <InfoRow>
-                    <Label>📞 전화번호</Label>
-                    <Value>{mostManyGamesMember.userTel}</Value>
-                </InfoRow>
-                <InfoRow>
-                    <Label>📍 지역</Label>
-                    <Value>{mostManyGamesMember.region}</Value>
-                </InfoRow>
-                <InfoRow>
-                    <Label>🚻 성별</Label>
-                    <Value>{mostManyGamesMember.gender === "FEMALE" ? "여성" : "남성"}</Value>
-                </InfoRow>
-                <InfoRow>
-                    <Label>🎂 생년월일</Label>
-                    <Value>{mostManyGamesMember.birthDate}</Value>
-                </InfoRow>
-                <InfoRow>
-                    <Label>🎾 구력</Label>
-                    <Value>{mostManyGamesMember.career}년</Value>
-                </InfoRow>
+        </ChartTitle>
+        {mostAttendantMember.map((member, index) => (
+            <MemberCard key={index} onClick={() => handleCardClick(member, "event", index)}>
+            <NameRow>
+                <Medal>{medalEmojis[index]}</Medal>
+                <Name>{member.userName}</Name>
+            </NameRow>
+            <SubInfo>{member.attendanceCount}회</SubInfo>
             </MemberCard>
+        ))}
         </CardWrapper>
-        
         <CardWrapper>
-          <ChartTitle>
-            <ChartEmoji>🥇</ChartEmoji>
+        <ChartTitle>
+            <ChartEmoji>🥎</ChartEmoji>
             게임 최다 참가자
-          </ChartTitle>
-            <MemberCard>
-            <InfoRow>
-                <Label>👤 이름</Label>
-                <Value>{mostManyGamesMember.userName}</Value>
-            </InfoRow>
-            <InfoRow>
-                <Label>📞 전화번호</Label>
-                <Value>{mostManyGamesMember.userTel}</Value>
-            </InfoRow>
-            <InfoRow>
-                <Label>📍 지역</Label>
-                <Value>{mostManyGamesMember.region}</Value>
-            </InfoRow>
-            <InfoRow>
-                <Label>🚻 성별</Label>
-                <Value>{mostManyGamesMember.gender === "FEMALE" ? "여성" : "남성"}</Value>
-            </InfoRow>
-            <InfoRow>
-                <Label>🎂 생년월일</Label>
-                <Value>{mostManyGamesMember.birthDate}</Value>
-                            </InfoRow>
-            <InfoRow>
-                <Label>🎾 구력</Label>
-                <Value>{mostManyGamesMember.career}년</Value>
-            </InfoRow>
+        </ChartTitle>
+        {mostManyGamesMember.map((member, index) => (
+            <MemberCard key={index} onClick={() => handleCardClick(member, "game", index)}>
+            <NameRow>
+                <Medal>{medalEmojis[index]}</Medal>
+                <Name>{member.userName}</Name>
+            </NameRow>
+            <SubInfo>{member.totalGames}회</SubInfo>
             </MemberCard>
+        ))}
         </CardWrapper>
-
 
         <CardWrapper>
-          <ChartTitle>
-            <ChartEmoji>🥇</ChartEmoji>
-            이 달의 득점왕
-          </ChartTitle>
-            <MemberCard>
-            <InfoRow>
-                <Label>👤 이름</Label>
-                <Value>{mostManyGamesMember.userName}</Value>
-            </InfoRow>
-            <InfoRow>
-                <Label>📞 전화번호</Label>
-                <Value>{mostManyGamesMember.userTel}</Value>
-            </InfoRow>
-            <InfoRow>
-                <Label>📍 지역</Label>
-                <Value>{mostManyGamesMember.region}</Value>
-            </InfoRow>
-            <InfoRow>
-                <Label>🚻 성별</Label>
-                <Value>{mostManyGamesMember.gender === "FEMALE" ? "여성" : "남성"}</Value>
-            </InfoRow>
-            <InfoRow>
-                <Label>🎂 생년월일</Label>
-                <Value>{mostManyGamesMember.birthDate}</Value>
-                            </InfoRow>
-            <InfoRow>
-                <Label>🎾 구력</Label>
-                <Value>{mostManyGamesMember.career}년</Value>
-            </InfoRow>
+        <ChartTitle>
+            <ChartEmoji>🥎</ChartEmoji>
+            득점왕
+        </ChartTitle>
+        {mostWinnerMember.map((member, index) => (
+            <MemberCard key={index} onClick={() => handleCardClick(member, "score", index)}>
+            <NameRow>
+                <Medal>{medalEmojis[index]}</Medal>
+                <Name>{member.userName}</Name>
+            </NameRow>
+            <SubInfo>{member.totalScore}점</SubInfo>
             </MemberCard>
+        ))}
         </CardWrapper>
-
-      </Grid>
+    </Grid>
       <CardWrapper>
         <ChartTitle>💡 AI 회원관리 보고서</ChartTitle>
         <MarkdownBox>
