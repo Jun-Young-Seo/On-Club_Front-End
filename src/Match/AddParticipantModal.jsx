@@ -137,18 +137,18 @@ useEffect(() => {
     }
   };
 
-  const fetchGuests = async () => {
-    try {
-      const response = await securedAPI.get(`/api/participant/all/guests?eventId=${eventId}`);
-      const guestsWithType = response.data.map(user => ({ ...user, type: 'GUEST', role: 'GUEST' }));
-      setGuests(guestsWithType); 
-    } catch (error) {
-      console.error('게스트 목록 가져오기 실패:', error);
-    }
-  };
+  // const fetchGuests = async () => {
+  //   try {
+  //     const response = await securedAPI.get(`/api/participant/all/guests?eventId=${eventId}`);
+  //     const guestsWithType = response.data.map(user => ({ ...user, type: 'GUEST', role: 'GUEST' }));
+  //     setGuests(guestsWithType); 
+  //   } catch (error) {
+  //     console.error('게스트 목록 가져오기 실패:', error);
+  //   }
+  // };
 
   fetchClubUsers();
-  fetchGuests();
+  // fetchGuests();
   
 }, [clubId, eventId]);
 

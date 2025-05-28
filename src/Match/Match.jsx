@@ -152,61 +152,58 @@ const Match = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [highlightName, setHighlightName] = useState(null);
 
-  const fetchData = useCallback(async () => {
-    try {
-      const [userRes, gameRes] = await Promise.all([
-        securedAPI.get(`/api/participant/all?eventId=${eventId}`),
-        securedAPI.get(`/api/game/all_games?eventId=${eventId}`)
-      ]);
+const fetchData = async () => {
+  try {
+    const [userRes, gameRes] = await Promise.all([
+      securedAPI.get(`/api/participant/all?eventId=${eventId}`),
+      securedAPI.get(`/api/game/all_games?eventId=${eventId}`)
+    ]);
+    console.log(userRes.data);
+    const participants = userRes.data.map(user => ({
+      id: user.userId,
+      userId: user.userId,
+      name: user.userName,
+      gender: user.gender === 'FEMALE' ? '여자' : '남자',
+      career: user.career,
+      gameCount: user.gameCount ?? 0,
+      lastGamedAt: user.lastGamedAt ? new Date(user.lastGamedAt) : null,
+    }));
 
-      // 대기자 명단
-      const participants = userRes.data.map(user => ({
-        id: user.userId,
-        userId: user.userId,
-        name: user.userName,
-        gender: user.gender === 'FEMALE' ? '여자' : '남자',
-        career: user.career,
-        gameCount: user.gameCount ?? 0,
-        lastGamedAt: user.lastGamedAt ? new Date(user.lastGamedAt) : null, 
-      }));
+    setWaitingList(participants);
+    const map = {};
+    participants.forEach(p => { map[p.id] = p; });
+    setAllParticipants(map);
 
-      console.log(userRes.data);
-      console.log(gameRes.data);
-      setWaitingList(participants);
-      const map = {};
-      participants.forEach(p => { map[p.id] = p; });
-      setAllParticipants(map);
+    setGameList(gameRes.data);
+  } catch (err) {
+    console.error("데이터 불러오기 실패:", err);
+  }
+};
 
-      // 게임 목록 (GetGameDto)
-      setGameList(gameRes.data);
-    } catch (err) {
-      console.error("데이터 불러오기 실패:", err);
-    }
-  }, [eventId]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+useEffect(() => {
+  if (eventId) fetchData();
+}, [eventId]);
 
   // 대기자 경과 시간 계산
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date();
-      const updated = {};
-      waitingList.forEach(p => {
-        if (p.lastGamedAt) {
-          const diffSec = Math.floor((now - p.lastGamedAt) / 1000);
-          const minutes = Math.floor(diffSec / 60);
-          const secs = diffSec % 60;
-          updated[p.id] = `${minutes}분 ${secs < 10 ? "0" : ""}${secs}초`;
-        } else {
-          updated[p.id] = "경기 전";
-        }
-      });
-      setElapsedTimes(updated);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [waitingList]);
+useEffect(() => {
+  const interval = setInterval(() => {
+    const now = new Date();
+    const updated = {};
+    waitingList.forEach(p => {
+      if (p.lastGamedAt) {
+        const diffSec = Math.floor((now - p.lastGamedAt) / 1000);
+        const minutes = Math.floor(diffSec / 60);
+        const secs = diffSec % 60;
+        updated[p.id] = `${minutes}분 ${secs < 10 ? "0" : ""}${secs}초`;
+      } else {
+        updated[p.id] = "경기 전";
+      }
+    });
+    setElapsedTimes(updated);
+  }, 1000);
+  return () => clearInterval(interval);
+}, [waitingList]);
 
 
 const toggleTempSelection = (id) => {
@@ -299,27 +296,12 @@ const completeGame = async (gameId, teamOneScore, teamTwoScore, teamOneId, teamT
     return 'DONE';
   };
 
-const getElapsedTime = (startedAt) => {
-  if (!startedAt) return '';
-
-  const now = new Date();
-  const elapsedMs = now - new Date(startedAt);
-  const seconds = Math.floor(elapsedMs / 1000);
-
-  const days = Math.floor(seconds / (24 * 60 * 60));
-  const hours = Math.floor((seconds % (24 * 60 * 60)) / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-
-  let result = '';
-  if (days > 0) result += `${days}일 `;
-  if (hours > 0) result += `${hours}시간 `;
-  if (minutes > 0) result += `${minutes}분 `;
-  if (seconds < 60 && result === '') result += `${secs}초`;
-
-  return result.trim();
-};
-
+  const getElapsedTime = (startedAt) => {
+    if (!startedAt) return '';
+    const now = new Date();
+    const seconds = Math.floor((now - new Date(startedAt)) / 1000);
+    return `${Math.floor(seconds / 60)}분 ${seconds % 60}초`;
+  };
 
   return (
     <Container>
@@ -338,7 +320,6 @@ const getElapsedTime = (startedAt) => {
               <div>{user.name}</div>
               <TimeText>{elapsedTimes[user.id]}</TimeText>
               <TimeText>{user.gender} / {user.career}년차</TimeText>
-              <TimeText>경기 수: {user.gameCount}회</TimeText> {/* 추가 */}
             </Card>
           ))}
         </FlexWrap>
@@ -450,9 +431,12 @@ const getElapsedTime = (startedAt) => {
           eventId={eventId}
           onClose={() => setIsModalOpen(false)}
           onSuccess={() => {
-            fetchData();
             setIsModalOpen(false);
+            setTimeout(() => {
+              fetchData();
+            }, 300);  
           }}
+
         />
       )}
     </Container>
