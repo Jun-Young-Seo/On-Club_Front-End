@@ -166,8 +166,11 @@ const Match = () => {
         name: user.userName,
         gender: user.gender === 'FEMALE' ? '여자' : '남자',
         career: user.career,
-        lastGamedAt: user.lastGamedAt ? new Date(user.lastGamedAt) : new Date(),
+        gameCount: user.gameCount ?? 0,
+        lastGamedAt: user.lastGamedAt ? new Date(user.lastGamedAt) : null, 
       }));
+
+      console.log(userRes.data);
       console.log(gameRes.data);
       setWaitingList(participants);
       const map = {};
@@ -191,15 +194,20 @@ const Match = () => {
       const now = new Date();
       const updated = {};
       waitingList.forEach(p => {
-        const diffSec = Math.floor((now - p.lastGamedAt) / 1000);
-        const minutes = Math.floor(diffSec / 60);
-        const secs = diffSec % 60;
-        updated[p.id] = `${minutes}분 ${secs < 10 ? "0" : ""}${secs}초`;
+        if (p.lastGamedAt) {
+          const diffSec = Math.floor((now - p.lastGamedAt) / 1000);
+          const minutes = Math.floor(diffSec / 60);
+          const secs = diffSec % 60;
+          updated[p.id] = `${minutes}분 ${secs < 10 ? "0" : ""}${secs}초`;
+        } else {
+          updated[p.id] = "경기 전";
+        }
       });
       setElapsedTimes(updated);
     }, 1000);
     return () => clearInterval(interval);
   }, [waitingList]);
+
 
 const toggleTempSelection = (id) => {
   setCurrentTempSelection(prev => {
@@ -291,12 +299,27 @@ const completeGame = async (gameId, teamOneScore, teamTwoScore, teamOneId, teamT
     return 'DONE';
   };
 
-  const getElapsedTime = (startedAt) => {
-    if (!startedAt) return '';
-    const now = new Date();
-    const seconds = Math.floor((now - new Date(startedAt)) / 1000);
-    return `${Math.floor(seconds / 60)}분 ${seconds % 60}초`;
-  };
+const getElapsedTime = (startedAt) => {
+  if (!startedAt) return '';
+
+  const now = new Date();
+  const elapsedMs = now - new Date(startedAt);
+  const seconds = Math.floor(elapsedMs / 1000);
+
+  const days = Math.floor(seconds / (24 * 60 * 60));
+  const hours = Math.floor((seconds % (24 * 60 * 60)) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  let result = '';
+  if (days > 0) result += `${days}일 `;
+  if (hours > 0) result += `${hours}시간 `;
+  if (minutes > 0) result += `${minutes}분 `;
+  if (seconds < 60 && result === '') result += `${secs}초`;
+
+  return result.trim();
+};
+
 
   return (
     <Container>
@@ -315,6 +338,7 @@ const completeGame = async (gameId, teamOneScore, teamTwoScore, teamOneId, teamT
               <div>{user.name}</div>
               <TimeText>{elapsedTimes[user.id]}</TimeText>
               <TimeText>{user.gender} / {user.career}년차</TimeText>
+              <TimeText>경기 수: {user.gameCount}회</TimeText> {/* 추가 */}
             </Card>
           ))}
         </FlexWrap>
