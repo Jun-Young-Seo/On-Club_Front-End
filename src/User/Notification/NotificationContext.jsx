@@ -16,7 +16,7 @@ export const NotificationProvider = ({ children }) => {
       if (id && id !== userId) {
         setUserId(id);
       }
-    }, 500); // 0.5초마다 체크
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [userId]);

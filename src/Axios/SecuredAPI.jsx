@@ -5,26 +5,23 @@ import Swal from "sweetalert2";
 const BASE_URL = process.env.REACT_APP_API_URL;
 
 const securedAPI = axios.create({
-    baseURL: BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    withCredentials: true,  
+  baseURL: BASE_URL,
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  withCredentials: true, // ✅ 쿠키 자동 포함
 });
 
-//Request InterCeptor -> sessionStorage에서 액세스토큰 꺼내서 추가
+// ✅ Request Interceptor (Authorization 제거됨)
 securedAPI.interceptors.request.use(
-    async (config) => {
-        const accessToken = sessionStorage.getItem("accessToken");
-        if (accessToken) {
-            config.headers.Authorization = `Bearer ${accessToken}`;
-        }
-        return config;
-    },
-    (error) => Promise.reject(error)
+  async (config) => {
+    // 더 이상 accessToken을 헤더에 붙이지 않음
+    return config;
+  },
+  (error) => Promise.reject(error)
 );
 
-// Response Interceptor 개선
+// ✅ Response Interceptor
 securedAPI.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -32,35 +29,26 @@ securedAPI.interceptors.response.use(
 
     const status = error.response?.status;
     const errorCode = error.response?.data?.error;
-    console.log(error);
-    //만료된 토큰에 대해 한번만 리프레시 시도 - Back JWTExceptionFilter에서 "Expired" 응답이 오는 경우면 만료토큰임
-      if (status === 401 && errorCode === "Expired" && !originalRequest._retry) { // case "Expired"
-        console.log("accessToken 만료로 리프레시 토큰을 이용해 재요청 시도");
+
+    if (status === 401 && errorCode === "Expired" && !originalRequest._retry) {
+      console.log("accessToken 만료 → refreshToken으로 재시도");
       originalRequest._retry = true;
-
-      const refreshToken = sessionStorage.getItem("refreshToken");
-
-      if (!refreshToken) {
-        return handleSessionExpired();
-      }
 
       try {
         const refreshResponse = await unSecuredAPI.post(
           '/api/user/refresh',
-          null,
+          null, // ✅ Body 필요 없음
           {
-            headers: {
-              'Authorization': `Bearer ${refreshToken}`
-            }
+            withCredentials: true // ✅ 쿠키로 refreshToken 자동 전송
           }
         );
 
-        const newAccessToken = refreshResponse.data.accessToken;
-        console.log('갱신성공 : ',newAccessToken);
-        sessionStorage.setItem('accessToken', newAccessToken);
+        console.log("accessToken 재발급 성공");
 
-        // 새 토큰으로 기존 요청 재시도
-        originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+        // ✅ accessToken은 쿠키로 내려왔기 때문에 sessionStorage에 저장하지 않음
+        // 그러나 userName, userId 등은 필요하면 저장 가능
+
+        // ✅ 기존 요청 재시도 (쿠키 기반)
         return securedAPI(originalRequest);
       } catch (refreshError) {
         return handleSessionExpired(refreshError);
@@ -71,7 +59,7 @@ securedAPI.interceptors.response.use(
   }
 );
 
-// 세션 만료 공통 처리
+// ✅ 세션 만료 공통 처리
 function handleSessionExpired(err) {
   Swal.fire({
     icon: "warning",
@@ -79,7 +67,7 @@ function handleSessionExpired(err) {
     text: "다시 로그인해주세요.",
     confirmButtonText: "확인"
   }).then(() => {
-    sessionStorage.clear();
+    sessionStorage.clear(); // accessToken, userId 등 제거
     window.location.href = "/login";
   });
 

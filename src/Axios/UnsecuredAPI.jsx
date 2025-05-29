@@ -11,7 +11,7 @@ export const unSecuredAPI = axios.create({
 });
 
 export const login= async(loginData)=>{
-    const response = await unSecuredAPI.post('/api/user/login',loginData);
+    const response = await unSecuredAPI.post('/api/user/login',loginData);  
     return response;
 }
 
