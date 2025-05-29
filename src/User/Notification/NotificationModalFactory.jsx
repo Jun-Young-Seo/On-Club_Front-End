@@ -1,5 +1,6 @@
 import JoinRequestModal from "./JoinRequestModal";
 import GuestAttendRequestModal from "./GuestAttendRequestModal";
+import NoticeModal from "./NoticeModal";
 const NotificationModalFactory = ({ notification, onClose, onApprove, onReject }) => {
   if (!notification || typeof notification !== "object" || !notification.type) return null;
 
@@ -22,8 +23,13 @@ const NotificationModalFactory = ({ notification, onClose, onApprove, onReject }
               onClose={onClose}
               />
         )
-    case "APPROVED":
-      return null;
+    case "NOTICE":
+      return (
+        <NoticeModal
+          notification={notification}
+          onClose={onClose}
+        />
+      );
     default:
       return null;
   }

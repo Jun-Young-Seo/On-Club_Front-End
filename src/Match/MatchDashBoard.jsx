@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useCallback } from "react";
 import securedAPI from "../Axios/SecuredAPI";
+import Swal from "sweetalert2";
 
 
 const PageWrapper = styled.div`
@@ -197,31 +198,39 @@ useEffect(() => {
 }, [fetchClubDetails]);
 
 
-  const handleEventSubmit = async () => {
-    try {
-      const response = await securedAPI.post(
-        `/api/event/add-event`,
-        {
-          clubId: clubId,
-          eventStartTime: startTime,
-          eventEndTime: endTime,
-          eventDescription: eventDescription
-        }
-      );
 
-      console.log("이벤트 등록 성공:", response.data);
-      alert("이벤트가 성공적으로 추가되었습니다 ✅");
+const handleEventSubmit = async () => {
+  try {
+    const response = await securedAPI.post(`/api/event/add-event`, {
+      clubId: clubId,
+      eventStartTime: startTime,
+      eventEndTime: endTime,
+      eventDescription: eventDescription,
+    });
 
-      setStartTime("");
-      setEndTime("");
-      setEventDescription("");
+    await Swal.fire({
+      icon: "success",
+      title: "이벤트 등록 완료",
+      text: "이벤트가 성공적으로 추가되었습니다 ✅",
+      confirmButtonColor: "#5fbd7b",
+    });
 
-      fetchClubDetails();
-    } catch (error) {
-      console.error("이벤트 등록 실패 ❌", error);
-      alert("이벤트 추가 중 오류가 발생했습니다.");
-    }
-  };
+    setStartTime("");
+    setEndTime("");
+    setEventDescription("");
+
+    fetchClubDetails();
+  } catch (error) {
+    console.error("이벤트 등록 실패 ❌", error);
+
+    await Swal.fire({
+      icon: "error",
+      title: "이벤트 등록 실패",
+      text: "이벤트 추가 중 오류가 발생했습니다.",
+      confirmButtonColor: "#e74c3c",
+    });
+  }
+};
 
   const filteredEvents = eventList.filter((event) => {
     const eventDate = new Date(event.eventStartTime).toISOString().slice(0, 10);
