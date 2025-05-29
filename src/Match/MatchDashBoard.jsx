@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useCallback } from "react";
 import securedAPI from "../Axios/SecuredAPI";
-import Swal from "sweetalert2";
+
 
 const PageWrapper = styled.div`
   display: flex;
@@ -14,12 +14,15 @@ const PageWrapper = styled.div`
   padding: 2rem;
   box-sizing: border-box;
   font-family: "Segoe UI", sans-serif;
+  overflow: visible;
 `;
 
 const LeftColumn = styled.div`
   flex: 1;
-  overflow-y: auto;
+  overflow-y: hidden;
   margin-right: 2rem;
+  min-width: 0;
+  overflow-x: hidden;
 `;
 
 const CardGrid = styled.div`
@@ -37,7 +40,8 @@ const ListCard = styled.div`
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
   justify-content: space-between;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-
+  min-width: 0; 
+  width:90%;
   &:hover {
     transform: scale(1.025);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
@@ -49,6 +53,9 @@ const TimeBlock = styled.div`
   font-size: 0.95rem;
   color: #333;
   text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 const DescriptionBlock = styled.div`
@@ -57,6 +64,9 @@ const DescriptionBlock = styled.div`
   font-size: 1rem;
   color: #000;
   text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 const DetailButton = styled.button`
@@ -74,14 +84,14 @@ const DetailButton = styled.button`
 `;
 
 const RightColumn = styled.div`
-  width: 320px;
+  width: 20rem;
   background: #ffffff;
   border-radius: 1rem;
   padding: 2rem;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-  height: 70vh;
-  position: sticky;
-  top: 0;
+  height: fit-content;         
+  position: sticky;             
+  top: 2rem;                    
   align-self: flex-start;
   display: flex;
   flex-direction: column;
@@ -128,7 +138,9 @@ const FilterBar = styled.div`
   gap: 1rem;
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
+  max-width: 100%; 
 `;
+
 
 const FilterInput = styled.input`
   padding: 0.5rem;
@@ -173,54 +185,43 @@ const MatchDashBoard = () => {
     }
   }, [clubId]);
 
-  useEffect(() => {
-    fetchClubDetails();
-    const today = new Date();
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-  
-    setFilterStartDate(firstDay.toISOString().slice(0, 10)); // yyyy-mm-dd
-    setFilterEndDate(today.toISOString().slice(0, 10));
-  
-  }, [fetchClubDetails]);
+useEffect(() => {
+  fetchClubDetails();
 
-const handleEventSubmit = async () => {
-  try {
-    const response = await securedAPI.post(
-      `/api/event/add-event`,
-      {
-        clubId: clubId,
-        eventStartTime: startTime,
-        eventEndTime: endTime,
-        eventDescription: eventDescription
-      }
-    );
+  const today = new Date();
+  const twoMonthsAgo = new Date(today);
+  twoMonthsAgo.setMonth(today.getMonth() - 2); // 두 달 전
 
-    console.log("이벤트 등록 성공:", response.data);
+  setFilterStartDate(twoMonthsAgo.toISOString().slice(0, 10)); // YYYY-MM-DD
+  setFilterEndDate(today.toISOString().slice(0, 10));           // 오늘
+}, [fetchClubDetails]);
 
-    await Swal.fire({
-      icon: "success",
-      title: "등록 완료",
-      text: "이벤트가 성공적으로 추가되었습니다",
-      confirmButtonColor: "#3085d6"
-    });
 
-    setStartTime("");
-    setEndTime("");
-    setEventDescription("");
+  const handleEventSubmit = async () => {
+    try {
+      const response = await securedAPI.post(
+        `/api/event/add-event`,
+        {
+          clubId: clubId,
+          eventStartTime: startTime,
+          eventEndTime: endTime,
+          eventDescription: eventDescription
+        }
+      );
 
-    fetchClubDetails();
-  } catch (error) {
-    console.error("이벤트 등록 실패", error);
+      console.log("이벤트 등록 성공:", response.data);
+      alert("이벤트가 성공적으로 추가되었습니다 ✅");
 
-    await Swal.fire({
-      icon: "error",
-      title: "등록 실패",
-      text: "이벤트 추가 중 오류가 발생했습니다.",
-      confirmButtonColor: "#d33"
-    });
-  }
-};
+      setStartTime("");
+      setEndTime("");
+      setEventDescription("");
 
+      fetchClubDetails();
+    } catch (error) {
+      console.error("이벤트 등록 실패 ❌", error);
+      alert("이벤트 추가 중 오류가 발생했습니다.");
+    }
+  };
 
   const filteredEvents = eventList.filter((event) => {
     const eventDate = new Date(event.eventStartTime).toISOString().slice(0, 10);
