@@ -28,13 +28,17 @@ const HeaderContainer = styled.header`
 const LogoContainer = styled.div`
   display: flex;
   align-items: center;
-  font-size: 2.0vh;
+  font-size: 1.8vh;
   font-weight: bold;
   color: black;
   cursor: pointer;
   flex-shrink: 0;
   min-width: 15vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
+
 
 const LogoIcon = styled.div`
   width: 5vh;
@@ -263,7 +267,7 @@ const EmojiIcon = styled.span`
 `;
 
 const LogoFont = styled.img`
-  height: 2.0vh;
+  height: 2vh;
   margin-left: 1vh;
   object-fit: contain;
   vertical-align: middle;
@@ -273,9 +277,12 @@ const StyledNavLink = styled.span`
   position: relative;
   text-decoration: none;
   color: black;
-  font-size: 2.0vh;
+  font-size: 1.8vh;
   font-weight: 600;
   cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   &:hover::after {
     transform: scaleX(1);
@@ -285,7 +292,7 @@ const StyledNavLink = styled.span`
     content: "";
     position: absolute;
     left: 0;
-    bottom: -0.4vh;
+    bottom: -0.3vh;
     width: 100%;
     height: 0.2vh;
     background-color: #2563EB;
@@ -296,7 +303,6 @@ const StyledNavLink = styled.span`
 `;
 
 const MyPageLink = styled(StyledNavLink)`
-  // margin-right: 0.8vw;
   display: inline-flex;
   align-items: center;
 

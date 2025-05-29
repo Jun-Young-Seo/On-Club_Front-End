@@ -257,7 +257,8 @@ useEffect(() => {
     setEndDate("");
   };
   const handleCreateTransaction = (newTransaction) => {
-    setTransactions([...transactions, newTransaction]);
+    fetchTransactions();
+    // setTransactions([...transactions, newTransaction]);
   };
   
   const handleExcelFileUpload = (file, password) => {
@@ -277,17 +278,12 @@ useEffect(() => {
     formData.append('excelFilePassword', password);  
     formData.append('excelFile', file);
   
-    console.log('userId:', userId);
-    console.log('clubId:', clubId);
-    console.log('accountId:', accountId);
-    console.log('password:', password);
   
     return securedAPI.post('/api/excel/budget', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
     .then(response => {
-      console.log('업로드 성공:', response.data);
-      fetchTransactions(); // 리스트 갱신
+      fetchTransactions(); 
     })
     .catch(error => {
       console.error('엑셀 업로드 실패:', error);

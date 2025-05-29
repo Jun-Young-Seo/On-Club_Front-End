@@ -1,9 +1,18 @@
+
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import { BrowserRouter as Router } from 'react-router-dom'; // BrowserRouter 추가
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+
+if (process.env.NODE_ENV === "production") {
+  console.log = function () {};
+  console.warn = function () {};
+  console.error = function () {};
+}
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
