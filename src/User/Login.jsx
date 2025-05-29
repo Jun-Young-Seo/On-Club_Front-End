@@ -199,8 +199,8 @@ const Login = () => {
       const response = await login({ userTel, password });
 
       sessionStorage.setItem("userId", response.data.userId);
-      sessionStorage.setItem("accessToken", response.data.accessToken);
-      sessionStorage.setItem("refreshToken", response.data.refreshToken);
+      // sessionStorage.setItem("accessToken", response.data.accessToken);
+      // sessionStorage.setItem("refreshToken", response.data.refreshToken);
 
       setLoginFailed(false);
 
