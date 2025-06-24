@@ -94,44 +94,44 @@
 
 ### 📐 초기 화면
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/1ee4867e-b7e6-4505-9ff7-9f43a2150f16" width="300"/>
+  <img src="https://github.com/user-attachments/assets/1ee4867e-b7e6-4505-9ff7-9f43a2150f16" width="500"/>
 </p>
 
 ---
 
 ### 🏗️ 클럽 소개 페이지
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/6b451b82-20e3-44c4-aef1-4d879c566189" width="360"/>
-  <img src="https://github.com/user-attachments/assets/08a80d40-bd8c-4328-b7ba-03863ef3d34b" width="360"/>
+  <img src="https://github.com/user-attachments/assets/6b451b82-20e3-44c4-aef1-4d879c566189" width="450"/>
+  <img src="https://github.com/user-attachments/assets/08a80d40-bd8c-4328-b7ba-03863ef3d34b" width="450"/>
 </p>
 
 ---
 
 ### 💰 예산 관리
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/1b550741-b395-4199-91c6-d7357fd95749" width="360"/>
-  <img src="https://github.com/user-attachments/assets/04aa6f9b-bb7d-46ab-b4f1-afc70e9985df" width="360"/>
+  <img src="https://github.com/user-attachments/assets/1b550741-b395-4199-91c6-d7357fd95749" width="450"/>
+  <img src="https://github.com/user-attachments/assets/04aa6f9b-bb7d-46ab-b4f1-afc70e9985df" width="450"/>
 </p>
 
 ---
 
 ### 👥 회원 관리
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/6e2e84a0-b168-4139-8607-fca3e189c301" width="360"/>
+  <img src="https://github.com/user-attachments/assets/6e2e84a0-b168-4139-8607-fca3e189c301" width="550"/>
 </p>
 
 ---
 
 ### 📅 모임 관리
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/5329e7d8-ad0e-484d-aeff-9a36e6b38271" width="360"/>
-  <img src="https://github.com/user-attachments/assets/0a461a83-3b6b-4ed2-9790-abb2dcc94f02" width="360"/>
+  <img src="https://github.com/user-attachments/assets/5329e7d8-ad0e-484d-aeff-9a36e6b38271" width="450"/>
+  <img src="https://github.com/user-attachments/assets/0a461a83-3b6b-4ed2-9790-abb2dcc94f02" width="450"/>
 </p>
 
 ---
 
 ### 🤖 AI 보고서
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/6f8239f3-9383-486e-b95e-d5db69e02565" width="320"/>
-  <img src="https://github.com/user-attachments/assets/926cab14-63ad-43b9-aa34-c91d1cbdc8b7" width="320"/>
+  <img src="https://github.com/user-attachments/assets/6f8239f3-9383-486e-b95e-d5db69e02565" width="450"/>
+  <img src="https://github.com/user-attachments/assets/926cab14-63ad-43b9-aa34-c91d1cbdc8b7" width="450"/>
 </p>
